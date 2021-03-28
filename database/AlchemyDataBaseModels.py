@@ -1,7 +1,8 @@
+# this class creates db with tables
+# notice! if you activate it (db.create_all()) it will recreate all
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-
-# from sqlalchemy import Column, INTEGER, String
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
