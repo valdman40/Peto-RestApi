@@ -1,15 +1,19 @@
 from abc import ABC, abstractmethod
 
 
-class VideoDBMethodsAbstract(ABC):
+class UserDBMethodsAbstract(ABC):
     @abstractmethod
     def __init__(self, db, model):
         pass
 
     @abstractmethod
-    def get(self, video_id):
+    def get(self, username, password):
         pass
 
     @abstractmethod
-    def put(self, video):
+    def put(self, user):
+        pass
+
+    @abstractmethod
+    def update(self, user):
         pass

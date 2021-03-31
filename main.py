@@ -1,50 +1,79 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 
 from shared import db
-from database.AlchemyDataBaseModels import VideoModel
-from database.VideoDBMethodsAlchemy import VideoDBMethodsAlchemy
+from database.AlchemyDataBaseModels import UserModel
+from database.UserDBMethodsAlchemy import UserDBMethodsAlchemy
 
 app = Flask(__name__)
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database/database.db'
 db.init_app(app)
 
-video_put_args = reqparse.RequestParser()
-video_put_args.add_argument("name", type=str, help="Name of video is required", required=True)
-video_put_args.add_argument("views", type=int, help="Views of video is required", required=True)
-video_put_args.add_argument("likes", type=int, help="Likes of video is required", required=True)
+user_get_args = reqparse.RequestParser()
+user_get_args.add_argument("Username", type=str, help="username of user is required", required=True)
+user_get_args.add_argument("Password", type=str, help="password of user is required", required=True)
 
-video_resources_fields = {
+user_put_args = reqparse.RequestParser()
+user_put_args.add_argument("Name", type=str, help="Name of user is required", required=True)
+user_put_args.add_argument("Username", type=str, help="username of user is required", required=True)
+user_put_args.add_argument("Password", type=str, help="password of user is required", required=True)
+
+user_update_args = reqparse.RequestParser()
+user_update_args.add_argument("name", type=str, help="Name of user is required")
+user_update_args.add_argument("username", type=str, help="username of user is required")
+user_update_args.add_argument("password", type=str, help="password of user is required")
+
+user_resources_fields = {
     'id': fields.Integer,
     'name': fields.String,
-    'views': fields.Integer,
-    'likes': fields.Integer,
+    'username': fields.String,
+    'password': fields.String,
 }
 
 
-class Video(Resource):
-    video_db_methods = VideoDBMethodsAlchemy(db, VideoModel)
+class User(Resource):
+    user_db_methods = UserDBMethodsAlchemy(db, UserModel)
 
-    @marshal_with(video_resources_fields)
-    def get(self, video_id):
-        result = self.video_db_methods.get(video_id=video_id)
+    @marshal_with(user_resources_fields)
+    def get(self):
+        args = user_get_args.parse_args()
+        print(args)
+        result = self.user_db_methods.get(username=args['Username'], password=args['Password'])
         if not result:
-            abort(404, message="could not find video with that id")
+            abort(404, message="No password and username match found")
         return result, 200
 
-    @marshal_with(video_resources_fields)
-    def put(self, video_id):
-        result = self.video_db_methods.get(video_id=video_id)
+    @marshal_with(user_resources_fields)
+    def put(self):
+        args = user_put_args.parse_args()
+        result = self.user_db_methods.get(username=args['Username'], password=args['Password'])
         if result:
-            abort(409, message="video with that id already exist")
-        args = video_put_args.parse_args()
-        video = VideoModel(id=video_id, name=args['name'], views=args['views'], likes=args['likes'])
-        self.video_db_methods.put(video)
-        return video, 201
+            abort(409, message="Can't use this username")
+        args = user_put_args.parse_args()
+        user = UserModel(username=args['Username'], password=args['Password'], name=args['Name'])
+        self.user_db_methods.put(user)
+        return user, 201
+
+    # @marshal_with(user_resources_fields)
+    # def patch(self, video_id):
+    #     result = self.user_db_methods.get(video_id=video_id)
+    #     if not result:
+    #         abort(404, message="could not find video with that id, so cannot update")
+    #     args = user_update_args.parse_args()
+    #     if args['name']:
+    #         result.name = args['name']
+    #     if args['views']:
+    #         result.views = args['views']
+    #     if args['likes']:
+    #         result.views = args['likes']
+    #     self.user_db_methods.update(result)
+    #     return result, 201
 
 
-api.add_resource(Video, "/video/<int:video_id>")
+api.add_resource(User, "/users")
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)
+    # app.run()

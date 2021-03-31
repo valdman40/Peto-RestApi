@@ -1,18 +1,16 @@
 import requests
 
-BASE = "http://127.0.0.1:5000"
+BASE = "http://10.0.0.9:5000"
 
 dummy_data = [
-    {'likes': 78, 'name': "joe", "views": 100000},
-    {'likes': 3, 'name': "roy", "views": 456},
-    {'likes': 100, 'name': "yuval", "views": 987},
-    {'likes': 1, 'name': "tomer", "views": 1},
-    {'likes': 2, 'name': "omry", "views": 2}
+    {"Username": "Roy", "Password": "1234", "Name": "roy waldman", },
+    {"Username": "Yuval", "Password": "1234", "Name": "yuval cohen", },
 ]
-
-for i in range(len(dummy_data)):
-    response = requests.put(f"{BASE}/video/{i}", dummy_data[i])
-    print(response.json())
-input()
-response = requests.get(f"{BASE}/video/{2}")
+# for user in dummy_data:
+#     response = requests.put(f"{BASE}/users", user)
+#     print(response.json())
+# input()
+d = f"{BASE}/users?Username=Roy&Password=1234"
+print(d)
+response = requests.get(f"{BASE}/users?Username=Roy&Password=1234")
 print(response.json())

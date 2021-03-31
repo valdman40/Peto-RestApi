@@ -9,14 +9,14 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 db = SQLAlchemy(app)
 
 
-class VideoModel(db.Model):
+class UserModel(db.Model):
     id = db.Column(db.INTEGER, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    views = db.Column(db.INTEGER, nullable=False)
-    likes = db.Column(db.INTEGER, nullable=False)
+    username = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(100), nullable=False)
 
     def __repr__(self):
-        return f"Video(name= {self.name}, view= {self.views}, likes= {self.likes})"
+        return f"User(name= {self.name}, username= {self.username},password= {self.password})"
 
 
 db.create_all()
