@@ -7,7 +7,11 @@ class UserDBMethodsAbstract(ABC):
         pass
 
     @abstractmethod
-    def get(self, username, password):
+    def login(self, username, password):
+        pass
+
+    @abstractmethod
+    def get_by_username(self, username):
         pass
 
     @abstractmethod

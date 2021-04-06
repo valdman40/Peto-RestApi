@@ -37,17 +37,18 @@ class User(Resource):
 
     @marshal_with(user_resources_fields)
     def get(self):
+        print('get')
         args = user_get_args.parse_args()
-        print(args)
-        result = self.user_db_methods.get(username=args['Username'], password=args['Password'])
+        result = self.user_db_methods.login(username=args['Username'], password=args['Password'])
         if not result:
             abort(404, message="No password and username match found")
         return result, 200
 
     @marshal_with(user_resources_fields)
     def put(self):
+        print('put')
         args = user_put_args.parse_args()
-        result = self.user_db_methods.get(username=args['Username'], password=args['Password'])
+        result = self.user_db_methods.get_by_username(username=args['Username'])
         if result:
             abort(409, message="Can't use this username")
         args = user_put_args.parse_args()
@@ -71,7 +72,7 @@ class User(Resource):
     #     return result, 201
 
 
-api.add_resource(User, "/users")
+api.add_resource(User, "/users/")
 
 if __name__ == "__main__":
     # app.run(debug=True)
