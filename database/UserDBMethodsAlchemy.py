@@ -17,8 +17,8 @@ class UserDBMethodsAlchemy(UserDBMethodsAbstract):
     def put(self, user):
         self.db.session.add(user)
         self.db.session.commit()
-        pass
 
     def update(self, user):
+        local_object = self.db.session.merge(user)
+        self.db.session.add(local_object)
         self.db.session.commit()
-        pass

@@ -20,9 +20,10 @@ user_put_args.add_argument("Username", type=str, help="username of user is requi
 user_put_args.add_argument("Password", type=str, help="password of user is required", required=True)
 
 user_update_args = reqparse.RequestParser()
-user_update_args.add_argument("name", type=str, help="Name of user is required")
-user_update_args.add_argument("username", type=str, help="username of user is required")
-user_update_args.add_argument("password", type=str, help="password of user is required")
+user_update_args.add_argument("Name", type=str)
+user_update_args.add_argument("Username", type=str, help="username of user is required")
+user_update_args.add_argument("Password", type=str, help="password of user is required")
+user_update_args.add_argument("New_Password", type=str, help="new password of user is required")
 
 user_resources_fields = {
     'id': fields.Integer,
@@ -37,7 +38,6 @@ class User(Resource):
 
     @marshal_with(user_resources_fields)
     def get(self):
-        print('get')
         args = user_get_args.parse_args()
         result = self.user_db_methods.login(username=args['Username'], password=args['Password'])
         if not result:
@@ -46,7 +46,6 @@ class User(Resource):
 
     @marshal_with(user_resources_fields)
     def put(self):
-        print('put')
         args = user_put_args.parse_args()
         result = self.user_db_methods.get_by_username(username=args['Username'])
         if result:
@@ -56,20 +55,18 @@ class User(Resource):
         self.user_db_methods.put(user)
         return user, 201
 
-    # @marshal_with(user_resources_fields)
-    # def patch(self, video_id):
-    #     result = self.user_db_methods.get(video_id=video_id)
-    #     if not result:
-    #         abort(404, message="could not find video with that id, so cannot update")
-    #     args = user_update_args.parse_args()
-    #     if args['name']:
-    #         result.name = args['name']
-    #     if args['views']:
-    #         result.views = args['views']
-    #     if args['likes']:
-    #         result.views = args['likes']
-    #     self.user_db_methods.update(result)
-    #     return result, 201
+    @marshal_with(user_resources_fields)
+    def patch(self):
+        args = user_update_args.parse_args()
+        result = self.user_db_methods.login(username=args['Username'], password=args['Password'])
+        if not result:
+            abort(404, message="Could not find user, so cannot update")
+        if args['Name']:
+            result.name = args['Name']
+        if args['Password']:
+            result.views = args['Password']
+        self.user_db_methods.update(result)
+        return result, 201
 
 
 api.add_resource(User, "/users/")
