@@ -1,7 +1,7 @@
-from database.UserDBMethodsAbstract import UserDBMethodsAbstract
+from database.IUserDbMethods import IUserDbMethods
 
 
-class UserDBMethodsAlchemy(UserDBMethodsAbstract):
+class UserDBMethodsAlchemy(IUserDbMethods):
 
     def __init__(self, db, model):
         super().__init__(db, model)

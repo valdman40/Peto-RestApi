@@ -1,23 +1,27 @@
 from abc import ABC, abstractmethod
 
 
-class UserDBMethodsAbstract(ABC):
+class IPetDbMethods(ABC):
     @abstractmethod
     def __init__(self, db, model):
         pass
 
     @abstractmethod
-    def login(self, username, password):
+    def get(self, id):
         pass
 
     @abstractmethod
-    def get_by_username(self, username):
+    def get_name_user(self, name, user_id):
         pass
 
     @abstractmethod
-    def put(self, user):
+    def put(self, pet):
         pass
 
     @abstractmethod
-    def update(self, user):
+    def update(self, pet):
+        pass
+
+    @abstractmethod
+    def delete(self, id):
         pass
