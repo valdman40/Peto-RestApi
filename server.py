@@ -1,14 +1,13 @@
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
-from flask_sqlalchemy import SQLAlchemy
+# from flask_sqlalchemy import SQLAlchemy
 
-# from shared import db
+from shared import db
 from database.AlchemyDataBaseModels import UserModel, PetModel
 from database.UserDBMethodsAlchemy import UserDBMethodsAlchemy
 from database.PetDbMethodsAlchemy import PetDbMethodsAlchemy
 
 app = Flask(__name__)
-db = SQLAlchemy()
 api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database/database.db'
 db.init_app(app)
@@ -132,12 +131,22 @@ class Pet(Resource):
         if not result:
             abort(404, message="Could not find pet, so cannot delete")
         self.pet_db_methods.delete(id)
-        return 201
+        return 200
+
+
+class PetsByUser(Resource):
+    pet_db_methods = PetDbMethodsAlchemy(db, PetModel)
+
+    @marshal_with(pet_resources_fields)
+    def get(self, user_id):
+        result = self.pet_db_methods.get_by_userid(user_id)
+        return result, 200
 
 
 api.add_resource(User, "/users/")
 api.add_resource(Pet, '/pets/', endpoint="post")
 api.add_resource(Pet, '/pets/<id>', endpoint="get,patch,delete")
+api.add_resource(PetsByUser, '/pets/user/<user_id>', endpoint="get_userid")
 
 if __name__ == "__main__":
     # app.run(debug=True)

@@ -11,10 +11,6 @@ class IUserDbMethods(ABC):
         pass
 
     @abstractmethod
-    def get_by_username(self, username):
-        pass
-
-    @abstractmethod
     def put(self, user):
         pass
 

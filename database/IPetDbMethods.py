@@ -15,6 +15,10 @@ class IPetDbMethods(ABC):
         pass
 
     @abstractmethod
+    def get_by_userid(self, user_id):
+        pass
+
+    @abstractmethod
     def put(self, pet):
         pass
 

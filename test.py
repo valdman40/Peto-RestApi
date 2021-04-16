@@ -1,8 +1,5 @@
 import requests
-
-# BASE = "http://10.0.0.0:5000"
-# BASE = "http://192.168.43.72:5000"
-BASE = "http://192.168.0.122:5000"
+from shared import BASE_URL
 
 # dummy_data = [
 #     {"Username": "Roy", "Password": "1234", "Name": "roy waldman", },
@@ -19,15 +16,22 @@ BASE = "http://192.168.0.122:5000"
 # response = requests.get(f"{BASE}/users?Username=Roy&Password=1234")
 # print(response.json())
 
-dummy_pets = [
-    {"Name": "Tokyo", "Type": "dog", "User_Id": "1"},
-    {"Name": "Luna", "Type": "Cat", "User_Id": "1"},
-    {"Name": "Alpha", "Type": "Cat", "User_Id": "1"},
-    {"Name": "Alpha1", "Type": "Cat", "User_Id": "1"},
-    {"Name": "Alpha2", "Type": "Cat", "User_Id": "1"},
-]
+# dummy_pets = [
+#     {"Name": "Tokyo", "Type": "dog", "User_Id": "1"},
+#     {"Name": "Luna", "Type": "Cat", "User_Id": "1"},
+#     {"Name": "Alpha", "Type": "Cat", "User_Id": "1"},
+#     {"Name": "Alpha1", "Type": "Cat", "User_Id": "1"},
+#     {"Name": "Alpha2", "Type": "Cat", "User_Id": "1"},
+# ]
 # for pet in dummy_pets:
 #     response = requests.put(f"{BASE}/pets/", pet)
 #     print(response.json())
-response = requests.delete(f"{BASE}/pets/{3}")
-print(response.json())
+# response = requests.delete(f"{BASE}/pets/{3}")
+# print(response.json())
+
+response = requests.get(f"{BASE_URL}/pets/user/{1}")
+pets_of_user = response.json()
+print("user pets:\n[")
+for pet in pets_of_user:
+    print(f"{pet},")
+print("]")
