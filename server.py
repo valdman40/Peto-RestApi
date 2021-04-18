@@ -70,7 +70,6 @@ class User(Resource):
             abort(409, message="Can't use this username")
         #username is valid, so now we need to insert it into our database
         args = user_put_args.parse_args()
-        user = UserModel(username=args['Username'], password=args['Password'], name=args['Name'])
         answer = self.user_db_methods.put(username=args['Username'], password=args['Password'], name=args['Name'])
         if answer:
             return flask.Response(status=200)
