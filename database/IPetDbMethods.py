@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class IPetDbMethods(ABC):
     @abstractmethod
-    def __init__(self, db, model):
+    def __init__(self, db):
         pass
 
     @abstractmethod

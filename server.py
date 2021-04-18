@@ -1,15 +1,22 @@
+import flask
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
+from flask_mysqldb import MySQL
 # from flask_sqlalchemy import SQLAlchemy
 
 from shared import db
-from database.AlchemyDataBaseModels import UserModel, PetModel
 from database.UserDBMethodsAlchemy import UserDBMethodsAlchemy
 from database.PetDbMethodsAlchemy import PetDbMethodsAlchemy
 
 app = Flask(__name__)
 api = Api(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database/database.db'
+app.config['MYSQL_USER']='root'
+app.config['MYSQL_PASSWORD']='petodb'
+app.config['MYSQL_HOST']='34.90.42.143'
+app.config['MYSQL_DB']='petodb'
+app.config['MYSQL_CURSORCLASS']='DictCursor'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
+mysql=MySQL(app)
 db.init_app(app)
 
 
@@ -45,7 +52,7 @@ user_resources_fields = {
 
 
 class User(Resource):
-    user_db_methods = UserDBMethodsAlchemy(db, UserModel)
+    user_db_methods = UserDBMethodsAlchemy(mysql)
 
     @marshal_with(user_resources_fields)
     def get(self):
@@ -55,16 +62,20 @@ class User(Resource):
             abort(404, message="No password and username match found")
         return result, 200
 
-    @marshal_with(user_resources_fields)
+    #@marshal_with(user_resources_fields)
     def put(self):
         args = user_put_args.parse_args()
         result = self.user_db_methods.get_by_username(username=args['Username'])
         if result:
             abort(409, message="Can't use this username")
+        #username is valid, so now we need to insert it into our database
         args = user_put_args.parse_args()
         user = UserModel(username=args['Username'], password=args['Password'], name=args['Name'])
-        self.user_db_methods.put(user)
-        return user, 201
+        answer = self.user_db_methods.put(username=args['Username'], password=args['Password'], name=args['Name'])
+        if answer:
+            return flask.Response(status=200)
+        else:
+            abort(409, message=answer)
 
     @marshal_with(user_resources_fields)
     def patch(self):
@@ -101,7 +112,7 @@ pet_resources_fields = {
 
 
 class Pet(Resource):
-    pet_db_methods = PetDbMethodsAlchemy(db, PetModel)
+    pet_db_methods = PetDbMethodsAlchemy(db)
 
     @marshal_with(pet_resources_fields)
     def get(self, pet_id):
@@ -144,7 +155,7 @@ class Pet(Resource):
 
 
 class PetsByUser(Resource):
-    pet_db_methods = PetDbMethodsAlchemy(db, PetModel)
+    pet_db_methods = PetDbMethodsAlchemy(db)
 
     @marshal_with(pet_resources_fields)
     def get(self, user_id):
