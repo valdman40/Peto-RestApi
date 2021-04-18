@@ -12,6 +12,15 @@ api = Api(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database/database.db'
 db.init_app(app)
 
+
+
+
+#this is just for testing:
+@app.route('/')
+def home():
+    return "App Works!!!"
+#~~~~~~~~~~~~~~~~
+
 user_get_args = reqparse.RequestParser()
 user_get_args.add_argument("Username", type=str, help="username of user is required", required=True)
 user_get_args.add_argument("Password", type=str, help="password of user is required", required=True)
