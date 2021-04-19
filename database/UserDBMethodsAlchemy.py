@@ -29,14 +29,24 @@ class UserDBMethodsAlchemy(IUserDbMethods):
             cursor.execute("INSERT INTO users (name, username, password) VALUES (%s, %s, %s)",
                            (name, username, password,))
             self.db.connection.commit()
-            return cursor.lastrowid
+            return self.login(username,password)
         except Error as error:
             return error
 
 
 
 
-    def update(self, user):
-        local_object = self.db.session.merge(user)
-        self.db.session.add(local_object)
-        self.db.session.commit()
+    def update(self, user,new_password):
+        try:
+            cursor = self.db.connection.cursor()
+            cursor.execute("UPDATE `petodb`.`users` SET `password` = %s WHERE (`id` = %s);",(new_password,user[0]['id'],))
+            self.db.connection.commit()
+            return self.login(user[0]['username'],new_password)
+        except Error as error:
+            return error
+
+
+
+        # local_object = self.db.session.merge(user)
+        # self.db.session.add(local_object)
+        # self.db.session.commit()

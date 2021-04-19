@@ -3,7 +3,9 @@ from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_mysqldb import MySQL
 # from flask_sqlalchemy import SQLAlchemy
+from mysql.connector import Error
 
+from database.Models import PetModel
 from shared import db
 from database.UserDBMethodsAlchemy import UserDBMethodsAlchemy
 from database.PetDbMethodsAlchemy import PetDbMethodsAlchemy
@@ -15,7 +17,6 @@ app.config['MYSQL_PASSWORD']='petodb'
 app.config['MYSQL_HOST']='34.90.42.143'
 app.config['MYSQL_DB']='petodb'
 app.config['MYSQL_CURSORCLASS']='DictCursor'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///database.db'
 mysql=MySQL(app)
 db.init_app(app)
 
@@ -53,7 +54,7 @@ user_resources_fields = {
 
 class User(Resource):
     user_db_methods = UserDBMethodsAlchemy(mysql)
-
+    #log in
     @marshal_with(user_resources_fields)
     def get(self):
         args = user_get_args.parse_args()
@@ -62,7 +63,9 @@ class User(Resource):
             abort(404, message="No password and username match found")
         return result, 200
 
-    #@marshal_with(user_resources_fields)
+
+     #add a user
+    @marshal_with(user_resources_fields)
     def put(self):
         args = user_put_args.parse_args()
         result = self.user_db_methods.get_by_username(username=args['Username'])
@@ -72,22 +75,25 @@ class User(Resource):
         args = user_put_args.parse_args()
         answer = self.user_db_methods.put(username=args['Username'], password=args['Password'], name=args['Name'])
         if answer:
-            return flask.Response(status=200)
+            return answer,200
         else:
             abort(409, message=answer)
 
+
+#change password, something else?
     @marshal_with(user_resources_fields)
     def patch(self):
         args = user_update_args.parse_args()
         result = self.user_db_methods.login(username=args['Username'], password=args['Password'])
         if not result:
             abort(404, message="Could not find user, so cannot update")
-        if args['Name']:
-            result.name = args['Name']
-        if args['Password']:
-            result.views = args['Password']
-        self.user_db_methods.update(result)
-        return result, 201
+        # if args['Name'] :
+        #     result[0].name = args['Name']
+        #update name? no 'new name' field is sent in json
+        if args['New_Password']:
+            #result.views = args['Password']
+            result=self.user_db_methods.update(result,args['New_Password'])
+            return result, 201
 
 
 pet_get_args = reqparse.RequestParser()
@@ -95,7 +101,7 @@ pet_get_args.add_argument("Name", type=str, help="Name of user is required", req
 pet_get_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
 
 pet_put_args = reqparse.RequestParser()
-pet_put_args.add_argument("Name", type=str, help="Name of user is required", required=True)
+pet_put_args.add_argument("Name", type=str, help="Name of pet is required", required=True)
 pet_put_args.add_argument("Type", type=str, help="type of animal is required", required=True)
 pet_put_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
 
@@ -111,27 +117,34 @@ pet_resources_fields = {
 
 
 class Pet(Resource):
-    pet_db_methods = PetDbMethodsAlchemy(db)
+    pet_db_methods = PetDbMethodsAlchemy(mysql)
 
     @marshal_with(pet_resources_fields)
-    def get(self, pet_id):
-        result = self.pet_db_methods.get(pet_id)
-        if not result:
-            abort(404, message="No pet found with that id")
-        return result, 200
+    def get(self, id):
+        try:
+            result = self.pet_db_methods.get(id)
+            if not result:
+                abort(404, message="No pet found with that id")
+            return result, 200
+        except Error as error:
+         return abort(404,message=error.msg)
+
 
     @marshal_with(pet_resources_fields)
     def put(self):
         args = pet_put_args.parse_args()
         name = args["Name"]
         user_id = args["User_Id"]
+        #we also need to verify User_ID is in DB
         result = self.pet_db_methods.get_name_user(name, user_id)
         if result:
             abort(409, message=f"this user already has {name} as pet")
-        pet = PetModel(name=name, type=args["Type"], user_id=user_id)
-        self.pet_db_methods.put(pet)
-        return pet, 201
-
+        pet = PetModel(name=name, type=args["Type"],id=user_id,user_id=user_id)
+        try:
+            self.pet_db_methods.put(pet)
+            return pet, 201
+        except Error as error:
+            return abort(404, message=error.msg)
     @marshal_with(pet_resources_fields)
     def patch(self, pet_id):
         args = pet_update_args.parse_args()
