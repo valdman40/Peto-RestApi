@@ -1,14 +1,12 @@
-import flask
-from flask import Flask, request
+
+from flask import Flask
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_mysqldb import MySQL
-# from flask_sqlalchemy import SQLAlchemy
 from mysql.connector import Error
-
 from database.Models import PetModel, UserModel
 from shared import db
-from database.UserDBMethodsAlchemy import UserDBMethodsAlchemy
-from database.PetDbMethodsAlchemy import PetDbMethodsAlchemy
+from database.UserDBMethodsMySQL import UserDBMethodsMySQL
+from database.PetDbMethodsMySQL import PetDbMethodsMySQL
 
 app = Flask(__name__)
 api = Api(app)
@@ -29,13 +27,9 @@ def home():
 
 # ~~~~~~~~~~~~~~~~
 
-user_get_args = reqparse.RequestParser()
-user_get_args.add_argument("Username", type=str, help="username of user is required", required=True)
-user_get_args.add_argument("Password", type=str, help="password of user is required", required=True)
-
-user_post_args = reqparse.RequestParser()
-user_post_args.add_argument("Username", type=str, help="username of user is required", required=True)
-user_post_args.add_argument("Password", type=str, help="password of user is required", required=True)
+user_login_args = reqparse.RequestParser()
+user_login_args.add_argument("Username", type=str, help="username of user is required", required=True)
+user_login_args.add_argument("Password", type=str, help="password of user is required", required=True)
 
 user_put_args = reqparse.RequestParser()
 user_put_args.add_argument("Name", type=str, help="Name of user is required", required=True)
@@ -57,30 +51,18 @@ user_resources_fields = {
 
 
 class User(Resource):
-    user_db_methods = UserDBMethodsAlchemy(mysql)
+    user_db_methods = UserDBMethodsMySQL(mysql)
 
-    # log in
-    # @marshal_with(user_resources_fields)
-    # def get(self):
-    #     args = user_get_args.parse_args()
-    #     try:
-    #         result = self.user_db_methods.login(username=args['Username'], password=args['Password'])
-    #         if not result:
-    #             abort(404, message="No password and username match found")
-    #         return result, 200
-    #     except Error as error:
-    #         return abort(404, message=error.msg)
-
-    # log in - Was moved to a post method
+    # login
     def post(self):
-        args = user_get_args.parse_args()
+        args = user_login_args.parse_args()
         try:
             result = self.user_db_methods.login(username=args['Username'], password=args['Password'])
             if not result:
                 abort(404, message="No password and username match found")
             return result, 200
         except Error as error:
-            return abort(404, message=error.msg)
+            return abort(400, message=error.msg)
 
     # add a user
     @marshal_with(user_resources_fields)
@@ -91,13 +73,12 @@ class User(Resource):
             if result:
                 abort(409, message="Can't use this username")
             # username is valid, so now we need to insert it into our database
-            args = user_put_args.parse_args()
             user = UserModel(username=args['Username'], password=args['Password'], name=args['Name'])
-            answer = self.user_db_methods.put(user)
-            if answer:
-                return answer, 200
+            user = self.user_db_methods.put(user)
+            if user:
+                return user, 200
             else:
-                abort(409, message=answer)
+                abort(409, message=user)
         except Error as error:
             return abort(404, message=error.msg)
 
@@ -148,7 +129,7 @@ pet_resources_fields = {
 
 
 class Pet(Resource):
-    pet_db_methods = PetDbMethodsAlchemy(mysql)
+    pet_db_methods = PetDbMethodsMySQL(mysql)
 
     # Return pet by id
     @marshal_with(pet_resources_fields)
@@ -211,9 +192,8 @@ class Pet(Resource):
 
 
 class PetsByUser(Resource):
-
     ## NOT YET IMPLEMNTED - maybe we should add another table user id,pet id ?
-    pet_db_methods = PetDbMethodsAlchemy(db)
+    pet_db_methods = PetDbMethodsMySQL(db)
 
     @marshal_with(pet_resources_fields)
     def get(self, user_id):

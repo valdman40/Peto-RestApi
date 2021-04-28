@@ -1,8 +1,9 @@
 from database.IUserDbMethods import IUserDbMethods
 from mysql.connector import Error
+from database.Models import UserModel
 
 
-class UserDBMethodsAlchemy(IUserDbMethods):
+class UserDBMethodsMySQL(IUserDbMethods):
 
     def __init__(self, db):
         super().__init__(db)
@@ -11,41 +12,28 @@ class UserDBMethodsAlchemy(IUserDbMethods):
     def login(self, username, password):
         cursor = self.db.connection.cursor()
         cursor.execute("SELECT * FROM users WHERE username = %s and password = %s", (username, password))
-        answer = cursor.fetchall()
-        return answer
-
-        # return self.model.query.filter_by(username=username, password=password).first()
+        user = cursor.fetchone()
+        return user
 
     def get_by_username(self, username):
         cursor = self.db.connection.cursor()
         cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
-        answer = cursor.fetchall()
-        return answer
-        # return self.model.query.filter_by(username=username).first()
+        user = cursor.fetchone()
+        return user
 
-    def put(self,user):
-
+    def put(self, user: UserModel):
         cursor = self.db.connection.cursor()
         cursor.execute("INSERT INTO users (name, username, password) VALUES (%s, %s, %s)",
                        (user.name, user.username, user.password,))
         self.db.connection.commit()
-        return self.login(user.username,user.password)
+        return user
 
-
-
-
-
-    def update(self, user,new_password):
+    def update(self, user: UserModel):
         try:
             cursor = self.db.connection.cursor()
-            cursor.execute("UPDATE `petodb`.`users` SET `password` = %s WHERE (`id` = %s);",(new_password,user.id,))
+            cursor.execute("UPDATE Users SET password = %s, username = %s WHERE (id = %s);"
+                           , (user.password, user.username, user.id,))
             self.db.connection.commit()
-            return self.login(user.username,new_password)
+            return user
         except Error as error:
             return error
-
-
-
-        # local_object = self.db.session.merge(user)
-        # self.db.session.add(local_object)
-        # self.db.session.commit()

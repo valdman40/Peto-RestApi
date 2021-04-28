@@ -12,7 +12,7 @@ def is_valid_type(type):
     return True
 
 
-class PetDbMethodsAlchemy(IPetDbMethods):
+class PetDbMethodsMySQL(IPetDbMethods):
 
     def __init__(self, db):
         super().__init__(db)
