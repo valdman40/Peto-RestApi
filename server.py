@@ -1,4 +1,3 @@
-
 from flask import Flask
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_mysqldb import MySQL
@@ -37,10 +36,9 @@ user_put_args.add_argument("Username", type=str, help="username of user is requi
 user_put_args.add_argument("Password", type=str, help="password of user is required", required=True)
 
 user_update_args = reqparse.RequestParser()
-user_update_args.add_argument("Name", type=str)
-user_update_args.add_argument("Username", type=str, help="username of user is required")
-user_update_args.add_argument("Password", type=str, help="password of user is required")
-user_update_args.add_argument("New_Password", type=str, help="new password of user is required")
+user_update_args.add_argument("Name", type=str, help="Name of user is required", required=True)
+user_update_args.add_argument("Username", type=str, help="username of user is required", required=True)
+user_update_args.add_argument("New_Password", type=str, help="password of user is required", required=True)
 
 user_resources_fields = {
     'id': fields.Integer,
@@ -82,24 +80,17 @@ class User(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
-    # # change password, something else?
-    # @marshal_with(user_resources_fields)
-    # def patch(self):
-    #     args = user_update_args.parse_args()
-    #     try:
-    #         result = self.user_db_methods.login(username=args['Username'], password=args['Password'])
-    #         if not result:
-    #             abort(404, message="Could not find user, so cannot update")
-    #         # if args['Name'] :
-    #         #     result[0].name = args['Name']
-    #         # update name? no 'new name' field is sent in json
-    #         if args['New_Password']:
-    #             user = UserModel(username=result[0]['username'], id=result[0]['id'])
-    #             # result.views = args['Password']
-    #             result = self.user_db_methods.update(user, args['New_Password'])
-    #             return result, 201
-    #     except Error as error:
-    #         return abort(404, message=error.msg)
+    #edit user
+    @marshal_with(user_resources_fields)
+    def patch(self, id):
+        args = user_update_args.parse_args()
+        try:
+            user_with_changes = UserModel(name=args['Name'], username=args['Username'], password=args['New_Password'],
+                                          id=id)
+            result = self.user_db_methods.update(user_with_changes)
+            return result, 201
+        except Error as error:
+            return abort(404, message=error.msg)
 
 
 pet_get_args = reqparse.RequestParser()
@@ -158,25 +149,8 @@ class Pet(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
-    # @marshal_with(pet_resources_fields)
-    # def patch(self):
-    #     args = pet_update_args.parse_args()
-    #     result = self.pet_db_methods.get(args['Id'])
-    #     try:
-    #         if not result:
-    #             abort(404, message="Could not find pet, so cannot update")
-    #         if args['Name'] and args['Type']:
-    #             return self.pet_db_methods.update_name_and_type(result, args), 201
-    #
-    #         elif args['Type']:
-    #             return self.pet_db_methods.update_type(result, args), 201
-    #         elif args['Name']:
-    #             return self.pet_db_methods.update_name(result, args), 201
-    #         else:
-    #             return abort(404, message="no data for modification")
-    #     except Error as error:
-    #         return abort(404, message=error.msg)
 
+    # delete pet by id
     def delete(self, id):
         try:
             pet = self.pet_db_methods.get(id)
@@ -198,6 +172,7 @@ class PetsByUser(Resource):
 
 
 api.add_resource(User, "/users/")
+api.add_resource(User, "/users/<id>", endpoint="patch")
 api.add_resource(Pet, '/pets/', endpoint="post")
 api.add_resource(Pet, '/pets/<id>', endpoint="get,patch,delete")
 api.add_resource(PetsByUser, '/pets/user/<user_id>', endpoint="get_userid")
