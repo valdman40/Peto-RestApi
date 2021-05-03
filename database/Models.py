@@ -10,7 +10,7 @@ class UserModel():
 
 
 class PetModel():
-    def __init__(self, id: int, name: str, type: str, user_id: int):
+    def __init__(self, id: int = None, name: str = None, type: str = None, user_id: int = None):
         self.id = id
         self.name = name
         self.type = type

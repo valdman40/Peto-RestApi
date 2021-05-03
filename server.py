@@ -82,24 +82,24 @@ class User(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
-    # change password, something else?
-    @marshal_with(user_resources_fields)
-    def patch(self):
-        args = user_update_args.parse_args()
-        try:
-            result = self.user_db_methods.login(username=args['Username'], password=args['Password'])
-            if not result:
-                abort(404, message="Could not find user, so cannot update")
-            # if args['Name'] :
-            #     result[0].name = args['Name']
-            # update name? no 'new name' field is sent in json
-            if args['New_Password']:
-                user = UserModel(username=result[0]['username'], id=result[0]['id'])
-                # result.views = args['Password']
-                result = self.user_db_methods.update(user, args['New_Password'])
-                return result, 201
-        except Error as error:
-            return abort(404, message=error.msg)
+    # # change password, something else?
+    # @marshal_with(user_resources_fields)
+    # def patch(self):
+    #     args = user_update_args.parse_args()
+    #     try:
+    #         result = self.user_db_methods.login(username=args['Username'], password=args['Password'])
+    #         if not result:
+    #             abort(404, message="Could not find user, so cannot update")
+    #         # if args['Name'] :
+    #         #     result[0].name = args['Name']
+    #         # update name? no 'new name' field is sent in json
+    #         if args['New_Password']:
+    #             user = UserModel(username=result[0]['username'], id=result[0]['id'])
+    #             # result.views = args['Password']
+    #             result = self.user_db_methods.update(user, args['New_Password'])
+    #             return result, 201
+    #     except Error as error:
+    #         return abort(404, message=error.msg)
 
 
 pet_get_args = reqparse.RequestParser()
@@ -119,7 +119,7 @@ pet_update_args.add_argument("Type", type=str, help="type of animal is required"
 
 pet_delete_args = reqparse.RequestParser()
 pet_delete_args.add_argument("Id", type=str, help="Name of user is required", required=True)
-pet_delete_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
+# pet_delete_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
 pet_resources_fields = {
     'id': fields.Integer,
     'name': fields.String,
@@ -148,42 +148,39 @@ class Pet(Resource):
         args = pet_put_args.parse_args()
         name = args["Name"]
         user_id = args["User_Id"]
-        # we also need to verify User_ID is in DB
         try:
             result = self.pet_db_methods.get_name_user(name, user_id)
             if result:
                 abort(409, message=f"this user already has {name} as pet")
-            pet = PetModel(name=name, type=args["Type"], id=user_id, user_id=user_id)
-            self.pet_db_methods.put(pet)
-            return pet, 201
+            newPet = PetModel(name=name, type=args["Type"], user_id=user_id)
+            newPet.id = self.pet_db_methods.put(newPet)
+            return newPet, 201
         except Error as error:
             return abort(404, message=error.msg)
 
-    @marshal_with(pet_resources_fields)
-    def patch(self):
-        args = pet_update_args.parse_args()
-        result = self.pet_db_methods.get(args['Id'])
-        try:
-            if not result:
-                abort(404, message="Could not find pet, so cannot update")
-            if args['Name'] and args['Type']:
-                return self.pet_db_methods.update_name_and_type(result, args), 201
+    # @marshal_with(pet_resources_fields)
+    # def patch(self):
+    #     args = pet_update_args.parse_args()
+    #     result = self.pet_db_methods.get(args['Id'])
+    #     try:
+    #         if not result:
+    #             abort(404, message="Could not find pet, so cannot update")
+    #         if args['Name'] and args['Type']:
+    #             return self.pet_db_methods.update_name_and_type(result, args), 201
+    #
+    #         elif args['Type']:
+    #             return self.pet_db_methods.update_type(result, args), 201
+    #         elif args['Name']:
+    #             return self.pet_db_methods.update_name(result, args), 201
+    #         else:
+    #             return abort(404, message="no data for modification")
+    #     except Error as error:
+    #         return abort(404, message=error.msg)
 
-            elif args['Type']:
-                return self.pet_db_methods.update_type(result, args), 201
-            elif args['Name']:
-                return self.pet_db_methods.update_name(result, args), 201
-            else:
-                return abort(404, message="no data for modification")
-        except Error as error:
-            return abort(404, message=error.msg)
-
-    def delete(self):
-        args = pet_delete_args.parse_args()
-        id = args['Id']
+    def delete(self, id):
         try:
-            result = self.pet_db_methods.get(id)
-            if not result:
+            pet = self.pet_db_methods.get(id)
+            if not pet:
                 abort(404, message="Could not find pet, so cannot delete")
             self.pet_db_methods.delete(id)
             return 200
@@ -193,12 +190,11 @@ class Pet(Resource):
 
 class PetsByUser(Resource):
     ## NOT YET IMPLEMNTED - maybe we should add another table user id,pet id ?
-    pet_db_methods = PetDbMethodsMySQL(db)
+    pet_db_methods = PetDbMethodsMySQL(mysql)
 
-    @marshal_with(pet_resources_fields)
     def get(self, user_id):
-        result = self.pet_db_methods.get_by_userid(user_id)
-        return result, 200
+        user_pets = self.pet_db_methods.get_by_userid(user_id)
+        return user_pets, 200
 
 
 api.add_resource(User, "/users/")
