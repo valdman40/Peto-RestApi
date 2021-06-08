@@ -80,7 +80,7 @@ class User(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
-    #edit user
+    # edit user
     @marshal_with(user_resources_fields)
     def patch(self, id):
         args = user_update_args.parse_args()
@@ -149,7 +149,6 @@ class Pet(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
-
     # delete pet by id
     def delete(self, id):
         try:
@@ -171,11 +170,20 @@ class PetsByUser(Resource):
         return user_pets, 200
 
 
+class PetFeeder(Resource):
+    pet_db_methods = PetDbMethodsMySQL(mysql)
+
+    def put(self, id):
+        pet = self.pet_db_methods.get(id)
+        print("feed pet", pet)
+
+
 api.add_resource(User, "/users/")
 api.add_resource(User, "/users/<id>", endpoint="patch")
 api.add_resource(Pet, '/pets/', endpoint="post")
 api.add_resource(Pet, '/pets/<id>', endpoint="get,patch,delete")
-api.add_resource(PetsByUser, '/pets/user/<user_id>', endpoint="get_userid")
+api.add_resource(PetsByUser, '/pets/user/<user_id>')
+api.add_resource(PetFeeder, '/pets/feed/<id>')
 
 if __name__ == "__main__":
     # app.run(debug=True)
