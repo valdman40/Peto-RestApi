@@ -170,12 +170,28 @@ class PetsByUser(Resource):
         return user_pets, 200
 
 
+# pet_id -> amount in grams to feed
+feeding_requests = dict()
+
+pet_feed_args = reqparse.RequestParser()
+pet_feed_args.add_argument("Amount", type=int, help="Amount of food in grams is required", required=True)
+
+
 class PetFeeder(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
 
     def put(self, id):
-        pet = self.pet_db_methods.get(id)
-        print("feed pet", pet)
+        # pet = self.pet_db_methods.get(id)
+        args = pet_feed_args.parse_args()
+        amount = args["Amount"]
+        feeding_requests[id] = amount
+        print("feeding_requests", feeding_requests)
+
+    def get(self, id):
+        if id in feeding_requests:
+            amount: int = feeding_requests[id]
+            feeding_requests.pop(id)
+            return amount
 
 
 api.add_resource(User, "/users/")
