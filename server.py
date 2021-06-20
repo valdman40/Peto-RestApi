@@ -161,6 +161,72 @@ class Pet(Resource):
             return abort(404, message=error.msg)
 
 
+feeding_schedule_get_args = reqparse.RequestParser()
+feeding_schedule_get_args.add_argument("Name", type=str, help="Name of user is required", required=True)
+feeding_schedule_get_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
+
+feeding_schedule_put_args = reqparse.RequestParser()
+feeding_schedule_put_args.add_argument("Name", type=str, help="Name of pet is required", required=True)
+feeding_schedule_put_args.add_argument("Type", type=str, help="type of animal is required", required=True)
+feeding_schedule_put_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
+
+feeding_schedule_update_args = reqparse.RequestParser()
+feeding_schedule_update_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
+feeding_schedule_update_args.add_argument("Id", type=int, help="missing pet_id, which pet are you referring to?", required=True)
+feeding_schedule_update_args.add_argument("Name", type=str)
+feeding_schedule_update_args.add_argument("Type", type=str, help="type of animal is required")
+
+feeding_schedule_delete_args = reqparse.RequestParser()
+feeding_schedule_delete_args.add_argument("Id", type=int, required=True)
+feeding_schedule_resources_fields = {
+    'id': fields.Integer,
+    'name': fields.String,
+    'amount': fields.Integer,
+    'pet_id': fields.Integer
+}
+
+
+class FeedingSchedule(Resource):
+    pet_db_methods = PetDbMethodsMySQL(mysql)
+
+    # Return pet by id
+    @marshal_with(pet_resources_fields)
+    def get(self, id):
+        try:
+            result = self.pet_db_methods.get(id)
+            if not result:
+                abort(404, message="No pet found with that id")
+            return result, 200
+        except Error as error:
+            return abort(404, message=error.msg)
+
+    # add a new pet
+    @marshal_with(pet_resources_fields)
+    def put(self):
+        args = pet_put_args.parse_args()
+        name = args["Name"]
+        user_id = args["User_Id"]
+        try:
+            result = self.pet_db_methods.get_name_user(name, user_id)
+            if result:
+                abort(409, message=f"this user already has {name} as pet")
+            newPet = PetModel(name=name, type=args["Type"], user_id=user_id)
+            newPet.id = self.pet_db_methods.put(newPet)
+            return newPet, 201
+        except Error as error:
+            return abort(404, message=error.msg)
+
+    # delete pet by id
+    def delete(self, id):
+        try:
+            pet = self.pet_db_methods.get(id)
+            if not pet:
+                abort(404, message="Could not find pet, so cannot delete")
+            self.pet_db_methods.delete(id)
+            return 200
+        except Error as error:
+            return abort(404, message=error.msg)
+
 class PetsByUser(Resource):
     ## NOT YET IMPLEMNTED - maybe we should add another table user id,pet id ?
     pet_db_methods = PetDbMethodsMySQL(mysql)

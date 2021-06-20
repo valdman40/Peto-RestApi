@@ -18,3 +18,14 @@ class PetModel():
 
     def __repr__(self):
         return f"Pet(name= {self.name}, type= {self.type}, user_id= {self.user_id})"
+
+
+class FeedingScheduleModel():
+    def __init__(self, id: int = None, name: str = None, amount: int = None, pet_id: int = None):
+        self.id = id
+        self.name = name
+        self.amount = amount
+        self.pet_id = pet_id
+
+    def __repr__(self):
+        return f"Pet(name= {self.name}, amount= {self.amount}, pet_id= {self.pet_id})"
