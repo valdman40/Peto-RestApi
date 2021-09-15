@@ -20,12 +20,15 @@ class PetModel():
         return f"Pet(name= {self.name}, type= {self.type}, user_id= {self.user_id})"
 
 
-class FeedingScheduleModel():
-    def __init__(self, id: int = None, name: str = None, amount: int = None, pet_id: int = None):
+class MealsModel():
+    def __init__(self, id: int = None, name: str = None, amount: int = None, time: str = None, type: str = None,
+                 pet_id: int = None):
         self.id = id
         self.name = name
         self.amount = amount
+        self.time = time
+        self.type = type
         self.pet_id = pet_id
 
     def __repr__(self):
-        return f"Pet(name= {self.name}, amount= {self.amount}, pet_id= {self.pet_id})"
+        return f"Meal(id= {self.id}, name= {self.name}, amount= {self.amount},time= {self.time} ,type= {self.type}, pet_id= {self.pet_id})"

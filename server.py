@@ -1,11 +1,13 @@
-from flask import Flask
+from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_mysqldb import MySQL
 from mysql.connector import Error
-from database.Models import PetModel, UserModel
+from database.Models import PetModel, UserModel, MealsModel
 from shared import db
 from database.UserDBMethodsMySQL import UserDBMethodsMySQL
 from database.PetDbMethodsMySQL import PetDbMethodsMySQL
+from database.MealsDbMethosMySQL import MealsDbMethodsMySQL
+import json
 
 app = Flask(__name__)
 api = Api(app)
@@ -80,8 +82,6 @@ class User(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
-    # edit user
-    @marshal_with(user_resources_fields)
     def patch(self, id):
         args = user_update_args.parse_args()
         try:
@@ -161,74 +161,19 @@ class Pet(Resource):
             return abort(404, message=error.msg)
 
 
-feeding_schedule_get_args = reqparse.RequestParser()
-feeding_schedule_get_args.add_argument("Name", type=str, help="Name of user is required", required=True)
-feeding_schedule_get_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
-
-feeding_schedule_put_args = reqparse.RequestParser()
-feeding_schedule_put_args.add_argument("Name", type=str, help="Name of pet is required", required=True)
-feeding_schedule_put_args.add_argument("Type", type=str, help="type of animal is required", required=True)
-feeding_schedule_put_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
-
-feeding_schedule_update_args = reqparse.RequestParser()
-feeding_schedule_update_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
-feeding_schedule_update_args.add_argument("Id", type=int, help="missing pet_id, which pet are you referring to?", required=True)
-feeding_schedule_update_args.add_argument("Name", type=str)
-feeding_schedule_update_args.add_argument("Type", type=str, help="type of animal is required")
-
-feeding_schedule_delete_args = reqparse.RequestParser()
-feeding_schedule_delete_args.add_argument("Id", type=int, required=True)
-feeding_schedule_resources_fields = {
+meal_delete_args = reqparse.RequestParser()
+meal_delete_args.add_argument("Id", type=int, required=True)
+meal_resources_fields = {
     'id': fields.Integer,
     'name': fields.String,
     'amount': fields.Integer,
+    'time': fields.String,
+    'type': fields.String,
     'pet_id': fields.Integer
 }
 
 
-class FeedingSchedule(Resource):
-    pet_db_methods = PetDbMethodsMySQL(mysql)
-
-    # Return pet by id
-    @marshal_with(pet_resources_fields)
-    def get(self, id):
-        try:
-            result = self.pet_db_methods.get(id)
-            if not result:
-                abort(404, message="No pet found with that id")
-            return result, 200
-        except Error as error:
-            return abort(404, message=error.msg)
-
-    # add a new pet
-    @marshal_with(pet_resources_fields)
-    def put(self):
-        args = pet_put_args.parse_args()
-        name = args["Name"]
-        user_id = args["User_Id"]
-        try:
-            result = self.pet_db_methods.get_name_user(name, user_id)
-            if result:
-                abort(409, message=f"this user already has {name} as pet")
-            newPet = PetModel(name=name, type=args["Type"], user_id=user_id)
-            newPet.id = self.pet_db_methods.put(newPet)
-            return newPet, 201
-        except Error as error:
-            return abort(404, message=error.msg)
-
-    # delete pet by id
-    def delete(self, id):
-        try:
-            pet = self.pet_db_methods.get(id)
-            if not pet:
-                abort(404, message="Could not find pet, so cannot delete")
-            self.pet_db_methods.delete(id)
-            return 200
-        except Error as error:
-            return abort(404, message=error.msg)
-
 class PetsByUser(Resource):
-    ## NOT YET IMPLEMNTED - maybe we should add another table user id,pet id ?
     pet_db_methods = PetDbMethodsMySQL(mysql)
 
     def get(self, user_id):
@@ -260,12 +205,51 @@ class PetFeeder(Resource):
             return amount
 
 
+meal_args = reqparse.RequestParser()
+meal_args.add_argument("name", type=str, help="Name is required", required=True)
+meal_args.add_argument("amount", type=int, help="Amount of food in grams is required", required=True)
+meal_args.add_argument("time", type=str, help="Time is required", required=True)
+meal_args.add_argument("type", type=bool, help="Type is required", required=True)
+# meal_args.add_argument("name", type=str, help="Name is required")
+# meal_args.add_argument("amount", type=int, help="Amount of food in grams is required")
+# meal_args.add_argument("time", type=str, help="Time is required")
+# meal_args.add_argument("type", type=bool, help="Type is required")
+
+
+class MealManager(Resource):
+    meals_methods = MealsDbMethodsMySQL(mysql)
+
+    # Return meals by pet_id
+    def get(self, pet_id):
+        try:
+            result = self.meals_methods.get_by_pet_id(pet_id)
+            if not result:
+                abort(404, message="No meals found with that pet_id")
+            result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
+            return result, 200
+        except Error as error:
+            return abort(404, message=error.msg)
+
+    def patch(self, id):
+        args = meal_args.parse_args()
+        try:
+            meal_after_changes = MealsModel(name=args['name'], amount=args['amount'], time=args['time'],
+                                            type=args['type'], id=id)
+            self.meals_methods.update(meal_after_changes)
+            return 201
+        except Error as error:
+            return abort(404, message=error.msg)
+
+
 api.add_resource(User, "/users/")
-api.add_resource(User, "/users/<id>", endpoint="patch")
-api.add_resource(Pet, '/pets/', endpoint="post")
-api.add_resource(Pet, '/pets/<id>', endpoint="get,patch,delete")
+api.add_resource(User, "/users/<id>", endpoint="user_patch")
+api.add_resource(Pet, '/pets/', endpoint="pet_post")
+api.add_resource(Pet, '/pets/<id>', endpoint="pet_get,patch,delete")
 api.add_resource(PetsByUser, '/pets/user/<user_id>')
 api.add_resource(PetFeeder, '/pets/feed/<id>')
+api.add_resource(MealManager, '/meal/pet/<pet_id>', endpoint="meal_get")
+api.add_resource(MealManager, '/meal/<id>', endpoint="meal_patch")
+api.add_resource(MealManager, '/meal/', endpoint="meal_ delete,insert,get")
 
 if __name__ == "__main__":
     # app.run(debug=True)

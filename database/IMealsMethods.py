@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class IFeedingScheduleMethods(ABC):
+class IMealsMethods(ABC):
     @abstractmethod
     def __init__(self, db):
         pass
