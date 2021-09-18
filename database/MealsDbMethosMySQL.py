@@ -29,13 +29,12 @@ class MealsDbMethodsMySQL(IMealsMethods):
         pet = cursor.fetchone()
         return pet
 
-    def put(self, feeding_schedule):
+    def put(self, meal):
         cursor = self.db.connection.cursor()
-        feeding_schedule: MealsModel = cursor.execute(
-            "INSERT INTO petodb.feedingSchedules (name, amount, pet_id) VALUES (%s, %s, %s)",
-            [feeding_schedule.name, feeding_schedule.amount, feeding_schedule.pet_id])
+        meal: MealsModel = cursor.execute(
+            "INSERT INTO petodb.meals (name, amount,time, repeat_daily, pet_id) VALUES (%s, %s, %s,%s, %s)",
+            [meal.name, meal.amount, meal.time, meal.daily_repeat, meal.pet_id])
         self.db.connection.commit()
-        # we return the id that was inserted
         return cursor.lastrowid
 
     def delete(self, id):
