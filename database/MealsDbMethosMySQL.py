@@ -25,7 +25,7 @@ class MealsDbMethodsMySQL(IMealsMethods):
 
     def get(self, id):
         cursor = self.db.connection.cursor()
-        cursor.execute("SELECT * FROM petodb.meals WHERE pet_id = %s", [id])
+        cursor.execute("SELECT * FROM petodb.meals WHERE id = %s", [id])
         pet = cursor.fetchone()
         return pet
 
@@ -39,5 +39,5 @@ class MealsDbMethodsMySQL(IMealsMethods):
 
     def delete(self, id):
         cursor = self.db.connection.cursor()
-        cursor.execute("DELETE FROM petodb.feedingSchedules WHERE id = %s;", [id])
+        cursor.execute("DELETE FROM petodb.meals WHERE id = %s;", [id])
         self.db.connection.commit()

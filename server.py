@@ -252,6 +252,16 @@ class MealManager(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
+    def delete(self, id):
+        try:
+            pet = self.meals_methods.get(id)
+            if not pet:
+                abort(404, message="Could not find meal, so cannot delete")
+            self.meals_methods.delete(id)
+            return 200
+        except Error as error:
+            return abort(404, message=error.msg)
+
 
 api.add_resource(User, "/users/")
 api.add_resource(User, "/users/<id>", endpoint="user_patch")
