@@ -12,8 +12,8 @@ class MealsDbMethodsMySQL(IMealsMethods):
 
     def update(self, meal: MealsModel):
         cursor = self.db.connection.cursor()
-        cursor.execute("UPDATE meals SET name = %s, amount = %s, time= %s WHERE id = %s"
-                       , [meal.name, meal.amount, meal.time, meal.id])
+        cursor.execute("UPDATE meals SET name = %s, amount = %s, time= %s, repeat_daily= %s WHERE id = %s"
+                       , [meal.name, meal.amount, meal.time, meal.repeat_daily, meal.id])
         self.db.connection.commit()
         return meal
 
@@ -33,7 +33,7 @@ class MealsDbMethodsMySQL(IMealsMethods):
         cursor = self.db.connection.cursor()
         meal: MealsModel = cursor.execute(
             "INSERT INTO petodb.meals (name, amount,time, repeat_daily, pet_id) VALUES (%s, %s, %s,%s, %s)",
-            [meal.name, meal.amount, meal.time, meal.daily_repeat, meal.pet_id])
+            [meal.name, meal.amount, meal.time, meal.repeat_daily, meal.pet_id])
         self.db.connection.commit()
         return cursor.lastrowid
 

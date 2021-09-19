@@ -21,14 +21,14 @@ class PetModel():
 
 
 class MealsModel():
-    def __init__(self, id: int = None, name: str = None, amount: int = None, time: str = None, daily_repeat: str = None,
+    def __init__(self, id: int = None, name: str = None, amount: int = None, time: str = None, repeat_daily: str = None,
                  pet_id: int = None):
         self.id = id
         self.name = name
         self.amount = amount
         self.time = time
-        self.daily_repeat = daily_repeat
+        self.repeat_daily = repeat_daily
         self.pet_id = pet_id
 
     def __repr__(self):
-        return f"Meal(id= {self.id}, name= {self.name}, amount= {self.amount},time= {self.time} ,type= {self.daily_repeat}, pet_id= {self.pet_id})"
+        return f"Meal(id= {self.id}, name= {self.name}, amount= {self.amount},time= {self.time} ,type= {self.repeat_daily}, pet_id= {self.pet_id})"

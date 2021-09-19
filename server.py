@@ -236,7 +236,7 @@ class MealManager(Resource):
         args = meal_args.parse_args()
         try:
             meal_after_changes = MealsModel(name=args['name'], amount=args['amount'], time=args['time'],
-                                            daily_repeat=args['repeat_daily'], id=id)
+                                            repeat_daily=args['repeat_daily'], id=id)
             self.meals_methods.update(meal_after_changes)
             return 201
         except Error as error:
@@ -246,7 +246,7 @@ class MealManager(Resource):
         args = meal_args.parse_args()
         try:
             new_meal = MealsModel(name=args['name'], amount=args['amount'], time=args['time'],
-                                  daily_repeat=args['repeat_daily'], pet_id=pet_id)
+                                  repeat_daily=args['repeat_daily'], pet_id=pet_id)
             meal_id = self.meals_methods.put(new_meal)
             return meal_id, 200
         except Error as error:

@@ -37,7 +37,7 @@ class PetDbMethodsMySQL(IPetDbMethods):
     def put(self, pet):
         cursor = self.db.connection.cursor()
         pet: PetModel = cursor.execute("INSERT INTO petodb.pets (name, type, user_id) VALUES (%s, %s, %s)",
-                                       [pet.name, pet.daily_repeat, pet.user_id])
+                                       [pet.name, pet.repeat_daily, pet.user_id])
         self.db.connection.commit()
         # we return the id that was inserted
         return cursor.lastrowid
