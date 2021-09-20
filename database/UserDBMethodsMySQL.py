@@ -43,3 +43,8 @@ class UserDBMethodsMySQL(IUserDbMethods):
                        , [user.password, user.username, user.name, user.id])
         self.db.connection.commit()
         return user
+
+    def update_token(self, token, id):
+        cursor = self.db.connection.cursor()
+        cursor.execute("UPDATE users SET push_notification_token = %s WHERE id = %s", [token, id])
+        self.db.connection.commit()
