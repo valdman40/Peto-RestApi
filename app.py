@@ -317,7 +317,7 @@ api.add_resource(MealManager, '/meal/<id>', endpoint="meal_patch")
 api.add_resource(MealManager, '/meal/pet/<pet_id>', endpoint="meal_put")
 api.add_resource(MealManager, '/meal/', endpoint="meal_ delete,insert,get")
 api.add_resource(PushNotification, '/push/<pet_id>')
-api.add_resource(PushNotification, '/push/<user_id>', endpoint="update_token")
+api.add_resource(PushNotification, '/updateToken/<user_id>', endpoint="update_token")
 
 if __name__ == "__main__":
     # app.run(debug=True)
