@@ -27,8 +27,6 @@ def home():
     return "App Works!!!"
 
 
-# ~~~~~~~~~~~~~~~~
-
 user_login_args = reqparse.RequestParser()
 user_login_args.add_argument("Username", type=str, help="username of user is required", required=True)
 user_login_args.add_argument("Password", type=str, help="password of user is required", required=True)
@@ -53,6 +51,15 @@ user_resources_fields = {
 
 class User(Resource):
     user_db_methods = UserDBMethodsMySQL(mysql)
+
+    def get(self, id):
+        try:
+            result = self.user_db_methods.get(id=id)
+            if not result:
+                abort(404, message="No user by that id")
+            return result, 200
+        except Error as error:
+            return abort(400, message=error.msg)
 
     # login
     def post(self):
@@ -275,13 +282,16 @@ user_notification_args.add_argument("push_notification_token")
 
 class PushNotification(Resource):
     user_db_methods = UserDBMethodsMySQL(mysql)
+    pet_db_methods = PetDbMethodsMySQL(mysql)
 
-    def put(self):
+    def put(self, pet_id):
         args = notification_args.parse_args()
         url = "https://exp.host/--/api/v2/push/send"
         headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
-        data = {'to': args['to'], 'title': args['title'], 'sound': 'default', 'body': args['body']}
         try:
+            result = self.pet_db_methods.get_token(id=pet_id)
+            data = {'to': result['push_notification_token'], 'title': args['title'], 'sound': 'default',
+                    'body': args['body']}
             requests.post(url, data=json.dumps(data), headers=headers)
             return 200
         except Error as error:
@@ -306,7 +316,7 @@ api.add_resource(MealManager, '/meal/pet/<pet_id>', endpoint="meal_get")
 api.add_resource(MealManager, '/meal/<id>', endpoint="meal_patch")
 api.add_resource(MealManager, '/meal/pet/<pet_id>', endpoint="meal_put")
 api.add_resource(MealManager, '/meal/', endpoint="meal_ delete,insert,get")
-api.add_resource(PushNotification, '/push/')
+api.add_resource(PushNotification, '/push/<pet_id>')
 api.add_resource(PushNotification, '/push/<user_id>', endpoint="update_token")
 
 if __name__ == "__main__":

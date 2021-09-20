@@ -9,6 +9,12 @@ class UserDBMethodsMySQL(IUserDbMethods):
         super().__init__(db)
         self.db = db
 
+    def get(self, id):
+        cursor = self.db.connection.cursor()
+        cursor.execute("SELECT * FROM users WHERE id = %s", (id))
+        user = cursor.fetchone()
+        return user
+
     def login(self, username, password):
         cursor = self.db.connection.cursor()
         cursor.execute("SELECT * FROM users WHERE username = %s and password = %s", (username, password))

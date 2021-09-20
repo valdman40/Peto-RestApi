@@ -22,6 +22,13 @@ class PetDbMethodsMySQL(IPetDbMethods):
         pet = cursor.fetchone()
         return pet
 
+    def get_token(self, id):
+        cursor = self.db.connection.cursor()
+        cursor.execute("SELECT push_notification_token FROM (Select user_id from petodb.pets where id = %s) as k " +
+                       "LEFT JOIN petodb.users ON users.id = k.user_id;", [id])
+        pet = cursor.fetchone()
+        return pet
+
     def get_name_user(self, name, user_id):
         cursor = self.db.connection.cursor()
         cursor.execute("SELECT * FROM petodb.pets WHERE name = %s AND user_id = %s", [name, user_id])
