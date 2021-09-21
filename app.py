@@ -124,7 +124,8 @@ pet_resources_fields = {
     'name': fields.String,
     'type': fields.String,
     'user_id': fields.Integer,
-    'container_filled': fields.Float
+    'container_filled': fields.Float,
+    'image': fields.String
 }
 
 
