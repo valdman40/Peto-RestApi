@@ -123,7 +123,8 @@ pet_resources_fields = {
     'id': fields.Integer,
     'name': fields.String,
     'type': fields.String,
-    'user_id': fields.Integer
+    'user_id': fields.Integer,
+    'container_filled': fields.Float
 }
 
 
@@ -134,10 +135,10 @@ class Pet(Resource):
     @marshal_with(pet_resources_fields)
     def get(self, id):
         try:
-            result = self.pet_db_methods.get(id)
-            if not result:
+            pet = self.pet_db_methods.get(id)
+            if not pet:
                 abort(404, message="No pet found with that id")
-            return result, 200
+            return pet, 200
         except Error as error:
             return abort(404, message=error.msg)
 
