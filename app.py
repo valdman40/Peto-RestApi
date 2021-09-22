@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_mysqldb import MySQL
 from mysql.connector import Error
@@ -8,7 +8,6 @@ from database.UserDBMethodsMySQL import UserDBMethodsMySQL
 from database.PetDbMethodsMySQL import PetDbMethodsMySQL
 from database.MealsDbMethosMySQL import MealsDbMethodsMySQL
 import json
-import requests
 
 app = Flask(__name__)
 api = Api(app)
