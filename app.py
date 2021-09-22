@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Flask ,request
+from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_mysqldb import MySQL
 from mysql.connector import Error
@@ -284,12 +284,16 @@ class MealManager(Resource):
             return abort(404, message=error.msg)
 
     def post(self, pet_id):  # post meal summary
-        args = post_meal_args.parse_args()
-        meal = MealSummaryModel(name=args['name'], mealTime=args['mealTime'], petStartedEating=args['petStartedEating'],
-                                amountGiven=args['amountGiven'], amountEaten=args['amountEaten'],
-                                petFinishedEating=args['petFinishedEating'])
-        self.meals_methods.insertPostMeal(pet_id,meal)
-        print(args)
+        try:
+            args = post_meal_args.parse_args()
+            meal = MealSummaryModel(name=args['name'], mealTime=args['mealTime'],
+                                    petStartedEating=args['petStartedEating'],
+                                    amountGiven=args['amountGiven'], amountEaten=args['amountEaten'],
+                                    petFinishedEating=args['petFinishedEating'])
+            self.meals_methods.insertPostMeal(pet_id, meal)
+            print(args)
+        except Error as error:
+            return abort(404, message=error.msg)
 
 
 notification_args = reqparse.RequestParser()
