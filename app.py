@@ -224,7 +224,7 @@ meal_args.add_argument("time", type=str, help="Time is required", required=True)
 meal_args.add_argument("repeat_daily", type=bool, help="repeat_daily is required", required=True)
 
 post_meal_args = reqparse.RequestParser()
-post_meal_args.add_argument("pet_id", type=int, help="pet_id is required", required=True)
+# post_meal_args.add_argument("pet_id", type=int, help="pet_id is required", required=True)
 post_meal_args.add_argument("name", type=str, help="name of meal is required", required=True)
 post_meal_args.add_argument("mealTime", type=str, help="Time is required", required=True)
 post_meal_args.add_argument("petStartedEating", type=str, help="datetime is required", required=True)
