@@ -288,7 +288,7 @@ class MealManager(Resource):
         meal = MealSummaryModel(name=args['name'], mealTime=args['mealTime'], petStartedEating=args['petStartedEating'],
                                 amountGiven=args['amountGiven'], amountEaten=args['amountEaten'],
                                 petFinishedEating=args['petFinishedEating'])
-        self.meals_methods.insertPostMeal(pet_id,meal)
+        meals_methods.insertPostMeal(pet_id,meal)
         print(args)
 
 
