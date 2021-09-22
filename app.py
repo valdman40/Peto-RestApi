@@ -291,7 +291,6 @@ class MealManager(Resource):
                                     amountGiven=args['amountGiven'], amountEaten=args['amountEaten'],
                                     petFinishedEating=args['petFinishedEating'])
             self.meals_methods.insertPostMeal(pet_id, meal)
-            print(args)
         except Error as error:
             return abort(404, message=error.msg)
 
