@@ -1,8 +1,10 @@
+from datetime import datetime
+
 from flask import Flask
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_mysqldb import MySQL
 from mysql.connector import Error
-from database.Models import PetModel, UserModel, MealsModel
+from database.Models import PetModel, UserModel, MealsModel, MealSummaryModel
 from shared import db
 from database.UserDBMethodsMySQL import UserDBMethodsMySQL
 from database.PetDbMethodsMySQL import PetDbMethodsMySQL
@@ -220,6 +222,15 @@ meal_args.add_argument("amount", type=int, help="Amount of food in grams is requ
 meal_args.add_argument("time", type=str, help="Time is required", required=True)
 meal_args.add_argument("repeat_daily", type=bool, help="repeat_daily is required", required=True)
 
+post_meal_args = reqparse.RequestParser()
+post_meal_args.add_argument("pet_id", type=int, help="pet_id is required", required=True)
+post_meal_args.add_argument("name", type=str, help="name of meal is required", required=True)
+post_meal_args.add_argument("mealTime", type=str, help="Time is required", required=True)
+post_meal_args.add_argument("petStartedEating", type=str, help="datetime is required", required=True)
+post_meal_args.add_argument("amountGiven", type=int, help="amountGiven given is required", required=True)
+post_meal_args.add_argument("amountEaten", type=int, help="amountEaten of food in grams is required", required=True)
+post_meal_args.add_argument("petFinishedEating", type=str, help="Time is required", required=True)
+
 
 # meal_args.add_argument("name", type=str, help="Name is required")
 # meal_args.add_argument("amount", type=int, help="Amount of food in grams is required")
@@ -270,6 +281,14 @@ class MealManager(Resource):
             return 200
         except Error as error:
             return abort(404, message=error.msg)
+
+    def post(self, pet_id):  # post meal summary
+        args = post_meal_args.parse_args()
+        meal = MealSummaryModel(name=args['name'], mealTime=args['mealTime'], petStartedEating=args['petStartedEating'],
+                                amountGiven=args['amountGiven'], amountEaten=args['amountEaten'],
+                                petFinishedEating=args['petFinishedEating'])
+        self.meals_methods.insertPostMeal(pet_id,meal)
+        print(args)
 
 
 notification_args = reqparse.RequestParser()

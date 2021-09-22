@@ -32,3 +32,15 @@ class MealsModel():
 
     def __repr__(self):
         return f"Meal(id= {self.id}, name= {self.name}, amount= {self.amount},time= {self.time} ,type= {self.repeat_daily}, pet_id= {self.pet_id})"
+
+
+class MealSummaryModel():
+    def __init__(self, name: str = None, mealTime: str = None, petStartedEating: str = None, amountGiven: int = None,
+                 amountEaten: int = None,
+                 petFinishedEating: str = None):
+        self.name = name
+        self.mealTime = mealTime
+        self.petStartedEating = petStartedEating
+        self.amountGiven = amountGiven
+        self.amountEaten = amountEaten
+        self.petFinishedEating = petFinishedEating

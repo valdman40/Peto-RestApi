@@ -1,7 +1,7 @@
 from database.IMealsMethods import IMealsMethods
 from mysql.connector import Error
 
-from database.Models import MealsModel
+from database.Models import MealsModel, MealSummaryModel
 
 
 class MealsDbMethodsMySQL(IMealsMethods):
@@ -41,3 +41,12 @@ class MealsDbMethodsMySQL(IMealsMethods):
         cursor = self.db.connection.cursor()
         cursor.execute("DELETE FROM petodb.meals WHERE id = %s;", [id])
         self.db.connection.commit()
+
+    def insertPostMeal(self, pet_id, meal):
+        cursor = self.db.connection.cursor()
+        meal: MealSummaryModel = cursor.execute(
+            "INSERT INTO petodb.meals_history (pet_id, name,time, pet_started_eating,pet_finished_eating,amount_given,amount_eaten) VALUES (%s, %s, %s,%s, %s,%s,%s)",
+            [pet_id, meal.name, meal.mealTime, meal.petStartedEating, meal.petFinishedEating, meal.amountGiven,
+             meal.amountEaten])
+        self.db.connection.commit()
+        # return cursor.lastrowid
