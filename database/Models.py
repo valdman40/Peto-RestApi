@@ -10,14 +10,15 @@ class UserModel():
 
 
 class PetModel():
-    def __init__(self, id: int = None, name: str = None, type: str = None, user_id: int = None):
+    def __init__(self, id: int = None, name: str = None, type: str = None, user_id: int = None, machine_id=None):
         self.id = id
         self.name = name
         self.type = type
         self.user_id = user_id
+        self.machine_id = machine_id
 
     def __repr__(self):
-        return f"Pet(name= {self.name}, type= {self.type}, user_id= {self.user_id})"
+        return f"Pet(name= {self.name}, type= {self.type}, user_id= {self.user_id},  machine_id= {self.machine_id})"
 
 
 class MealsModel():

@@ -9,6 +9,7 @@ from shared import db
 from database.UserDBMethodsMySQL import UserDBMethodsMySQL
 from database.PetDbMethodsMySQL import PetDbMethodsMySQL
 from database.MealsDbMethosMySQL import MealsDbMethodsMySQL
+from database.MealsHistoryDbMethodsMySQL import MealsHistoryDbMethodsMySQL
 import json
 import requests
 
@@ -111,6 +112,7 @@ pet_put_args = reqparse.RequestParser()
 pet_put_args.add_argument("Name", type=str, help="Name of pet is required", required=True)
 pet_put_args.add_argument("Type", type=str, help="type of animal is required", required=True)
 pet_put_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
+pet_put_args.add_argument("Machine_Id", type=int, help="missing machine")
 
 pet_update_args = reqparse.RequestParser()
 pet_update_args.add_argument("User_Id", type=int, help="missing user, who is this pet belong to?", required=True)
@@ -127,7 +129,8 @@ pet_resources_fields = {
     'type': fields.String,
     'user_id': fields.Integer,
     'container_filled': fields.Float,
-    'image': fields.String
+    'image': fields.String,
+    'machine_id': fields.String
 }
 
 
@@ -155,7 +158,7 @@ class Pet(Resource):
             result = self.pet_db_methods.get_name_user(name, user_id)
             if result:
                 abort(409, message=f"this user already has {name} as pet")
-            newPet = PetModel(name=name, type=args["Type"], user_id=user_id)
+            newPet = PetModel(name=name, type=args["Type"], user_id=user_id, machine_id=args["Machine_Id"])
             newPet.id = self.pet_db_methods.put(newPet)
             return newPet, 201
         except Error as error:
@@ -330,6 +333,21 @@ class PushNotification(Resource):
             return abort(404, message=error.msg)
 
 
+class MealsHistory(Resource):
+    meals_history_methods = MealsHistoryDbMethodsMySQL(mysql)
+
+    # Return meals by pet_id
+    def get(self, pet_id):
+        try:
+            result = self.meals_history_methods.get_by_pet_id(pet_id)
+            if not result:
+                abort(404, message="No meals history found with that pet_id")
+            result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
+            return result, 200
+        except Error as error:
+            return abort(404, message=error.msg)
+
+
 api.add_resource(User, "/users/")
 api.add_resource(User, "/users/<id>", endpoint="user_patch")
 api.add_resource(Pet, '/pets/', endpoint="pet_post")
@@ -342,6 +360,7 @@ api.add_resource(MealManager, '/meal/pet/<pet_id>', endpoint="meal_put")
 api.add_resource(MealManager, '/meal/', endpoint="meal_ delete,insert,get")
 api.add_resource(PushNotification, '/push/<pet_id>')
 api.add_resource(PushNotification, '/updateToken/<user_id>', endpoint="update_token")
+api.add_resource(MealsHistory, '/meal/history/pet/<pet_id>', endpoint="get_MealsHistory")
 
 if __name__ == "__main__":
     # app.run(debug=True)
