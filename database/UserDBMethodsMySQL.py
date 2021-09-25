@@ -34,15 +34,6 @@ class UserDBMethodsMySQL(IUserDbMethods):
         self.db.connection.commit()
         return user
 
-    # def update(self, user: UserModel):
-    #     try:
-    #         cursor = self.db.connection.cursor()
-    #         cursor.execute("UPDATE Users SET password = %s, username = %s WHERE (id = %s);"
-    #                        , (user.password, user.username, user.id,))
-    #         self.db.connection.commit()
-    #         return user
-    #     except Error as error:
-    #         return error
     def update(self, user: UserModel):
         cursor = self.db.connection.cursor()
         cursor.execute("UPDATE users SET password = %s, username = %s, name= %s WHERE id = %s"

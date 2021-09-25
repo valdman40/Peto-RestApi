@@ -17,3 +17,15 @@ class IUserDbMethods(ABC):
     @abstractmethod
     def update(self, user):
         pass
+
+    @abstractmethod
+    def get(self, id):
+        pass
+
+    @abstractmethod
+    def get_by_username(self, username):
+        pass
+
+    @abstractmethod
+    def update_token(self, token, id):
+        pass

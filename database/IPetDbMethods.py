@@ -23,15 +23,10 @@ class IPetDbMethods(ABC):
         pass
 
     @abstractmethod
-    def update_name_and_type(self, pet):
-        pass
-    @abstractmethod
-    def update_name(self, pet):
-        pass
-    def update_type(self, pet):
-        pass
-
-
-    @abstractmethod
     def delete(self, id):
         pass
+
+    @abstractmethod
+    def get_token(self, id):
+        pass
+

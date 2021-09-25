@@ -26,3 +26,7 @@ class IMealsMethods(ABC):
     @abstractmethod
     def delete(self, id):
         pass
+
+    @abstractmethod
+    def insertPostMeal(self, pet_id, meal):
+        pass

@@ -235,13 +235,6 @@ post_meal_args.add_argument("amountGiven", type=int, help="amountGiven given is 
 post_meal_args.add_argument("amountEaten", type=int, help="amountEaten of food in grams is required", required=True)
 post_meal_args.add_argument("petFinishedEating", type=str, help="Time is required", required=True)
 
-
-# meal_args.add_argument("name", type=str, help="Name is required")
-# meal_args.add_argument("amount", type=int, help="Amount of food in grams is required")
-# meal_args.add_argument("time", type=str, help="Time is required")
-# meal_args.add_argument("type", type=bool, help="Type is required")
-
-
 class MealManager(Resource):
     meals_methods = MealsDbMethodsMySQL(mysql)
 
@@ -306,7 +299,7 @@ notification_args.add_argument("body")
 user_notification_args = reqparse.RequestParser()
 user_notification_args.add_argument("push_notification_token")
 
-
+# PushNotification incharge of notifying user
 class PushNotification(Resource):
     user_db_methods = UserDBMethodsMySQL(mysql)
     pet_db_methods = PetDbMethodsMySQL(mysql)
@@ -336,7 +329,7 @@ class PushNotification(Resource):
 class MealsHistory(Resource):
     meals_history_methods = MealsHistoryDbMethodsMySQL(mysql)
 
-    # Return meals by pet_id
+    # Return history of pets meals
     def get(self, pet_id):
         try:
             result = self.meals_history_methods.get_by_pet_id(pet_id)
@@ -350,17 +343,17 @@ class MealsHistory(Resource):
 
 api.add_resource(User, "/users/")
 api.add_resource(User, "/users/<id>", endpoint="user_patch")
-api.add_resource(Pet, '/pets/', endpoint="pet_post")
-api.add_resource(Pet, '/pets/<id>', endpoint="pet_get,patch,delete")
+api.add_resource(Pet, '/pets/', endpoint="/pets/")
+api.add_resource(Pet, '/pets/<id>', endpoint="/pets/<id>")
 api.add_resource(PetsByUser, '/pets/user/<user_id>')
 api.add_resource(PetFeeder, '/pets/feed/<id>')
-api.add_resource(MealManager, '/meal/pet/<pet_id>', endpoint="meal_get")
-api.add_resource(MealManager, '/meal/<id>', endpoint="meal_patch")
-api.add_resource(MealManager, '/meal/pet/<pet_id>', endpoint="meal_put")
-api.add_resource(MealManager, '/meal/', endpoint="meal_ delete,insert,get")
+api.add_resource(MealManager, '/meal/pet/<pet_id>', endpoint="/meal/pet/<pet_id>_GET")
+api.add_resource(MealManager, '/meal/<id>', endpoint="/meal/<id>")
+api.add_resource(MealManager, '/meal/pet/<pet_id>', endpoint="/meal/pet/<pet_id>_PATCH")
+api.add_resource(MealManager, '/meal/', endpoint="/meal/")
 api.add_resource(PushNotification, '/push/<pet_id>')
-api.add_resource(PushNotification, '/updateToken/<user_id>', endpoint="update_token")
-api.add_resource(MealsHistory, '/meal/history/pet/<pet_id>', endpoint="get_MealsHistory")
+api.add_resource(PushNotification, '/updateToken/<user_id>', endpoint="/updateToken/<user_id>")
+api.add_resource(MealsHistory, '/meal/history/pet/<pet_id>')
 
 if __name__ == "__main__":
     # app.run(debug=True)
