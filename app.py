@@ -10,6 +10,7 @@ from database.UserDBMethodsMySQL import UserDBMethodsMySQL
 from database.PetDbMethodsMySQL import PetDbMethodsMySQL
 from database.MealsDbMethosMySQL import MealsDbMethodsMySQL
 from database.MealsHistoryDbMethodsMySQL import MealsHistoryDbMethodsMySQL
+from database.MachineDbMethodsMySQL import MachineDbMethodsMySQL
 import json
 import requests
 
@@ -136,6 +137,7 @@ pet_resources_fields = {
 
 class Pet(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
+    machine_db_methods = MachineDbMethodsMySQL(mysql)
 
     # Return pet by id
     @marshal_with(pet_resources_fields)
@@ -158,8 +160,12 @@ class Pet(Resource):
             result = self.pet_db_methods.get_name_user(name, user_id)
             if result:
                 abort(409, message=f"this user already has {name} as pet")
+            machine = self.machine_db_methods.get(args["Machine_Id"])
+            if not machine:
+                abort(409, message=f"Machine id not valid")
             newPet = PetModel(name=name, type=args["Type"], user_id=user_id, machine_id=args["Machine_Id"])
             newPet.id = self.pet_db_methods.put(newPet)
+            self.machine_db_methods.update(args["Machine_Id"], newPet.id)
             return newPet, 201
         except Error as error:
             return abort(404, message=error.msg)
