@@ -52,6 +52,7 @@ user_resources_fields = {
     'password': fields.String,
 }
 
+
 class User(Resource):
     user_db_methods = UserDBMethodsMySQL(mysql)
 
@@ -99,7 +100,7 @@ class User(Resource):
             user_with_changes = UserModel(name=args['Name'], username=args['Username'], password=args['New_Password'],
                                           id=id)
             result = self.user_db_methods.update(user_with_changes)
-            return result, 201
+            return 200
         except Error as error:
             return abort(404, message=error.msg)
 
@@ -158,14 +159,16 @@ class Pet(Resource):
         try:
             result = self.pet_db_methods.get_name_user(name, user_id)
             if result:
-                abort(409, message=f"this user already has {name} as pet")
+                abort(409, message=f"You already have {name} as pet")
             machine = self.machine_db_methods.get(args["Machine_Id"])
-            if not machine:
-                abort(409, message=f"Machine id not valid")
+            if machine is None:
+                abort(404, message=f"Machine id invalid")
+            if machine['pet_id'] != 0:
+                abort(405, message=f"Machine id already belong to another pet")
             newPet = PetModel(name=name, type=args["Type"], user_id=user_id, machine_id=args["Machine_Id"])
             newPet.id = self.pet_db_methods.put(newPet)
             self.machine_db_methods.update(args["Machine_Id"], newPet.id)
-            return newPet, 201
+            return newPet, 200
         except Error as error:
             return abort(404, message=error.msg)
 
@@ -241,8 +244,6 @@ post_meal_args.add_argument("amountEaten", type=int, help="amountEaten of food i
 post_meal_args.add_argument("petFinishedEating", type=str, help="Time is required", required=True)
 
 
-<<<<<<< HEAD
-=======
 class MachinePairing(Resource):
     machine_db_methods = MachineDbMethodsMySQL(mysql)
 
@@ -253,13 +254,11 @@ class MachinePairing(Resource):
             if not result:
                 abort(404, message="No such machine_id in DB")
             result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
-            return result,200
+            return result, 200
         except Error as error:
             return abort(404, message=error.msg)
 
 
-
->>>>>>> c3acfb6fd1238d2ee9a6bdf8d7610e3734a5821a
 class MealManager(Resource):
     meals_methods = MealsDbMethodsMySQL(mysql)
 
@@ -271,7 +270,7 @@ class MealManager(Resource):
                 abort(404, message="No meals found with that pet_id")
             result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
             for meal in result:
-                if len(meal['time']) is not 8:
+                if len(meal['time']) != 8:
                     meal['time'] = '0' + meal['time']
                 print(meal['time'])
             return result, 200
@@ -284,7 +283,7 @@ class MealManager(Resource):
             meal_after_changes = MealsModel(name=args['name'], amount=args['amount'], time=args['time'],
                                             repeat_daily=args['repeat_daily'], id=id)
             self.meals_methods.update(meal_after_changes)
-            return 201
+            return 200
         except Error as error:
             return abort(404, message=error.msg)
 

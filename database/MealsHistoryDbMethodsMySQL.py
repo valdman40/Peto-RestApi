@@ -9,7 +9,7 @@ class MealsHistoryDbMethodsMySQL(IMealsHistoryMethods):
 
     def get_by_pet_id(self, pet_id):
         cursor = self.db.connection.cursor()
-        cursor.execute("SELECT * FROM petodb.meals_history WHERE pet_id = %s", [pet_id])
+        cursor.execute("SELECT * FROM petodb.meals_history WHERE pet_id = %s order by time desc", [pet_id])
         meals = cursor.fetchall()
         return meals
 
