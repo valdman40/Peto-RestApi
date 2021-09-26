@@ -45,3 +45,12 @@ class MealSummaryModel():
         self.amountGiven = amountGiven
         self.amountEaten = amountEaten
         self.petFinishedEating = petFinishedEating
+
+
+class MachineModel():
+    def __init__(self, id, pet_id):
+        self.id = id
+        self.pet_id = pet_id
+
+    def __repr__(self):
+        return f"MachineModel(id= {self.id}, pet_id= {self.pet_id})"

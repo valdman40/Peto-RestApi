@@ -4,7 +4,7 @@ from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_mysqldb import MySQL
 from mysql.connector import Error
-from database.Models import PetModel, UserModel, MealsModel, MealSummaryModel
+from database.Models import PetModel, UserModel, MealsModel, MealSummaryModel, MachineModel
 from shared import db
 from database.UserDBMethodsMySQL import UserDBMethodsMySQL
 from database.PetDbMethodsMySQL import PetDbMethodsMySQL
@@ -51,7 +51,6 @@ user_resources_fields = {
     'username': fields.String,
     'password': fields.String,
 }
-
 
 class User(Resource):
     user_db_methods = UserDBMethodsMySQL(mysql)
@@ -241,6 +240,7 @@ post_meal_args.add_argument("amountGiven", type=int, help="amountGiven given is 
 post_meal_args.add_argument("amountEaten", type=int, help="amountEaten of food in grams is required", required=True)
 post_meal_args.add_argument("petFinishedEating", type=str, help="Time is required", required=True)
 
+
 class MealManager(Resource):
     meals_methods = MealsDbMethodsMySQL(mysql)
 
@@ -304,6 +304,7 @@ notification_args.add_argument("body")
 
 user_notification_args = reqparse.RequestParser()
 user_notification_args.add_argument("push_notification_token")
+
 
 # PushNotification incharge of notifying user
 class PushNotification(Resource):
