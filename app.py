@@ -241,6 +241,25 @@ post_meal_args.add_argument("amountEaten", type=int, help="amountEaten of food i
 post_meal_args.add_argument("petFinishedEating", type=str, help="Time is required", required=True)
 
 
+<<<<<<< HEAD
+=======
+class MachinePairing(Resource):
+    machine_db_methods = MachineDbMethodsMySQL(mysql)
+
+    # find if this  machine_id exists and if it already paired
+    def get(self, machine_id):
+        try:
+            result = self.machine_db_methods.get(machine_id)
+            if not result:
+                abort(404, message="No such machine_id in DB")
+            result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
+            return result,200
+        except Error as error:
+            return abort(404, message=error.msg)
+
+
+
+>>>>>>> c3acfb6fd1238d2ee9a6bdf8d7610e3734a5821a
 class MealManager(Resource):
     meals_methods = MealsDbMethodsMySQL(mysql)
 
@@ -251,6 +270,10 @@ class MealManager(Resource):
             if not result:
                 abort(404, message="No meals found with that pet_id")
             result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
+            for meal in result:
+                if len(meal['time']) is not 8:
+                    meal['time'] = '0' + meal['time']
+                print(meal['time'])
             return result, 200
         except Error as error:
             return abort(404, message=error.msg)
@@ -361,6 +384,7 @@ api.add_resource(MealManager, '/meal/', endpoint="/meal/")
 api.add_resource(PushNotification, '/push/<pet_id>')
 api.add_resource(PushNotification, '/updateToken/<user_id>', endpoint="/updateToken/<user_id>")
 api.add_resource(MealsHistory, '/meal/history/pet/<pet_id>')
+api.add_resource(MachinePairing, '/pair/<machine_id>')
 
 if __name__ == "__main__":
     # app.run(debug=True)
