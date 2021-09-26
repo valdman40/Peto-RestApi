@@ -251,6 +251,10 @@ class MealManager(Resource):
             if not result:
                 abort(404, message="No meals found with that pet_id")
             result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
+            for meal in result:
+                if len(meal['time']) is not 8:
+                    meal['time'] = '0' + meal['time']
+                print(meal['time'])
             return result, 200
         except Error as error:
             return abort(404, message=error.msg)
