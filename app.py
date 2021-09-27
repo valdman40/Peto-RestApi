@@ -12,7 +12,7 @@ from database.MealsDbMethosMySQL import MealsDbMethodsMySQL
 from database.MealsHistoryDbMethodsMySQL import MealsHistoryDbMethodsMySQL
 from database.MachineDbMethodsMySQL import MachineDbMethodsMySQL
 import json
-import requests
+# import requests
 
 app = Flask(__name__)
 api = Api(app)
@@ -210,9 +210,13 @@ feeding_requests = dict()
 pet_feed_args = reqparse.RequestParser()
 pet_feed_args.add_argument("Amount", type=int, help="Amount of food in grams is required", required=True)
 
+pet_container_args = reqparse.RequestParser()
+pet_container_args.add_argument("container", type=float, help="valid container percentage is required", required=True)
+
 
 class PetFeeder(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
+
 
     def put(self, id):
         # pet = self.pet_db_methods.get(id)
@@ -226,6 +230,11 @@ class PetFeeder(Resource):
             amount: int = feeding_requests[id]
             feeding_requests.pop(id)
             return amount
+    def post(self,id):
+        args = pet_container_args.parse_args()
+        result = self.pet_db_methods.post(id,args['container'])
+        return result
+
 
 
 meal_args = reqparse.RequestParser()

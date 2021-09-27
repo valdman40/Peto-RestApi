@@ -15,6 +15,13 @@ class PetDbMethodsMySQL(IPetDbMethods):
         pet = cursor.fetchone()
         return pet
 
+    def post(self, id, val):
+        cursor = self.db.connection.cursor()
+        cursor.execute("UPDATE petodb.pets SET container_filled = %s WHERE (id = %s);", [val, id])
+        pet = cursor.fetchone()
+        self.db.connection.commit()
+        return pet
+
     def get_token(self, id):
         cursor = self.db.connection.cursor()
         cursor.execute("SELECT push_notification_token FROM (Select user_id from petodb.pets where id = %s) as k " +
