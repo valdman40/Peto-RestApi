@@ -276,7 +276,6 @@ class MealManager(Resource):
             result = self.meals_methods.get_by_pet_id(pet_id)
             if not result:
                 return [], 200
-                abort(404, message="No meals found with that pet_id")
             result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
             for meal in result:
                 if len(meal['time']) != 8:
@@ -372,7 +371,7 @@ class MealsHistory(Resource):
         try:
             result = self.meals_history_methods.get_by_pet_id(pet_id)
             if not result:
-                abort(404, message="No meals history found with that pet_id")
+                abort(404, message="No meals history found with that pet")
             result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
             return result, 200
         except Error as error:
