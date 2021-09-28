@@ -54,3 +54,13 @@ class MachineModel():
 
     def __repr__(self):
         return f"MachineModel(id= {self.id}, pet_id= {self.pet_id})"
+
+
+class PetHealthModel():
+    def __init__(self, rate=None, pet_id=None, date=None):
+        self.pet_id = pet_id
+        self.rate = rate
+        self.date = date
+
+    def __repr__(self):
+        return f"PetHealth(pet_id= {self.pet_id}, rate= {self.rate}, date= {self.date})"

@@ -4,15 +4,17 @@ from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
 from flask_mysqldb import MySQL
 from mysql.connector import Error
-from database.Models import PetModel, UserModel, MealsModel, MealSummaryModel, MachineModel
+from database.Models import PetModel, UserModel, MealsModel, MealSummaryModel, MachineModel, PetHealthModel
 from shared import db
 from database.UserDBMethodsMySQL import UserDBMethodsMySQL
 from database.PetDbMethodsMySQL import PetDbMethodsMySQL
 from database.MealsDbMethosMySQL import MealsDbMethodsMySQL
 from database.MealsHistoryDbMethodsMySQL import MealsHistoryDbMethodsMySQL
 from database.MachineDbMethodsMySQL import MachineDbMethodsMySQL
+from database.PetHealthRateDbMethodsMySQL import PetHealthRateDbMethodsMySQL
 import json
 import requests
+
 # import configparser
 
 # config = configparser.ConfigParser()
@@ -54,6 +56,7 @@ user_resources_fields = {
     'username': fields.String,
     'password': fields.String,
 }
+
 
 # /users/
 # /users/<id>
@@ -137,6 +140,8 @@ pet_resources_fields = {
     'image': fields.String,
     'machine_id': fields.String
 }
+
+
 # /pets/
 # /pets/<id>
 class Pet(Resource):
@@ -199,6 +204,7 @@ meal_resources_fields = {
     'pet_id': fields.Integer
 }
 
+
 # /pets/user/<user_id>
 class PetsByUser(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
@@ -216,6 +222,7 @@ pet_feed_args.add_argument("Amount", type=int, help="Amount of food in grams is 
 
 pet_container_args = reqparse.RequestParser()
 pet_container_args.add_argument("container", type=float, help="valid container percentage is required", required=True)
+
 
 #
 class PetFeeder(Resource):
@@ -382,6 +389,40 @@ class MealsHistory(Resource):
             return abort(404, message=error.msg)
 
 
+health_args = reqparse.RequestParser()
+health_args.add_argument("rate")
+health_args.add_argument("pet_id")
+health_args.add_argument("date")
+
+
+class PetHealth(Resource):
+    pet_health_methods = PetHealthRateDbMethodsMySQL(mysql)
+
+    def put(self, pet_id):
+        args = health_args.parse_args()
+        try:
+            pet_health: PetHealthModel = self.pet_health_methods.get_today(pet_id)
+            if pet_health:
+                pet_health['rate'] = args['rate']
+                self.pet_health_methods.update(pet_health)
+            else:
+                pet_health = PetHealthModel(args['rate'], pet_id, args['date'])
+                self.pet_health_methods.put(pet_health)
+            return 200
+        except Error as error:
+            return abort(404, message=error.msg)
+
+    def get(self, pet_id):
+        try:
+            pet_health: PetHealthModel = self.pet_health_methods.get_today(pet_id)
+            if pet_health:
+                return pet_health['rate']
+            else:
+                return 5
+        except Error as error:
+            return abort(404, message=error.msg)
+
+
 api.add_resource(User, "/users/")
 api.add_resource(User, "/users/<id>", endpoint="user_patch")
 api.add_resource(Pet, '/pets/', endpoint="/pets/")
@@ -396,6 +437,8 @@ api.add_resource(PushNotification, '/push/<pet_id>')
 api.add_resource(PushNotification, '/updateToken/<user_id>', endpoint="/updateToken/<user_id>")
 api.add_resource(MealsHistory, '/meal/history/pet/<pet_id>')
 api.add_resource(MachinePairing, '/pair/<machine_id>')
+api.add_resource(PetHealth, '/pets/rating/<pet_id>')
+api.add_resource(PetHealth, '/pets/rating/<pet_id>', endpoint="PetHealth_get")
 
 if __name__ == "__main__":
     # app.run(debug=True)
