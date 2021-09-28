@@ -12,7 +12,7 @@ from database.MealsDbMethosMySQL import MealsDbMethodsMySQL
 from database.MealsHistoryDbMethodsMySQL import MealsHistoryDbMethodsMySQL
 from database.MachineDbMethodsMySQL import MachineDbMethodsMySQL
 import json
-# import requests
+import requests
 import configparser
 
 config = configparser.ConfigParser()
