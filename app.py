@@ -12,15 +12,18 @@ from database.MealsDbMethosMySQL import MealsDbMethodsMySQL
 from database.MealsHistoryDbMethodsMySQL import MealsHistoryDbMethodsMySQL
 from database.MachineDbMethodsMySQL import MachineDbMethodsMySQL
 import json
-import requests
+# import requests
+import configparser
 
+config = configparser.ConfigParser()
+config.read('cfg.ini')
 app = Flask(__name__)
 api = Api(app)
-app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = 'petodb'
-app.config['MYSQL_HOST'] = '34.90.42.143'
-app.config['MYSQL_DB'] = 'petodb'
-app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
+app.config['MYSQL_USER'] = config['DEFAULT']['MYSQL_USER']
+app.config['MYSQL_PASSWORD'] = config['DEFAULT']['MYSQL_PASSWORD']
+app.config['MYSQL_HOST'] = config['DEFAULT']["MYSQL_HOST"]
+app.config['MYSQL_DB'] = config['DEFAULT']["MYSQL_DB"]
+app.config['MYSQL_CURSORCLASS'] = config['DEFAULT']["MYSQL_CURSORCLASS"]
 mysql = MySQL(app)
 db.init_app(app)
 
@@ -52,7 +55,8 @@ user_resources_fields = {
     'password': fields.String,
 }
 
-
+# /users/
+# /users/<id>
 class User(Resource):
     user_db_methods = UserDBMethodsMySQL(mysql)
 
@@ -133,8 +137,8 @@ pet_resources_fields = {
     'image': fields.String,
     'machine_id': fields.String
 }
-
-
+# /pets/
+# /pets/<id>
 class Pet(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
     machine_db_methods = MachineDbMethodsMySQL(mysql)
@@ -195,7 +199,7 @@ meal_resources_fields = {
     'pet_id': fields.Integer
 }
 
-
+# /pets/user/<user_id>
 class PetsByUser(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
 
@@ -213,7 +217,7 @@ pet_feed_args.add_argument("Amount", type=int, help="Amount of food in grams is 
 pet_container_args = reqparse.RequestParser()
 pet_container_args.add_argument("container", type=float, help="valid container percentage is required", required=True)
 
-
+# /pets/feed/<id>
 class PetFeeder(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
 
@@ -251,7 +255,7 @@ post_meal_args.add_argument("amountGiven", type=int, help="amountGiven given is 
 post_meal_args.add_argument("amountEaten", type=int, help="amountEaten of food in grams is required", required=True)
 post_meal_args.add_argument("petFinishedEating", type=str, help="Time is required", required=True)
 
-
+# /pair/<machine_id>
 class MachinePairing(Resource):
     machine_db_methods = MachineDbMethodsMySQL(mysql)
 
@@ -267,6 +271,10 @@ class MachinePairing(Resource):
             return abort(404, message=error.msg)
 
 
+# /meal/pet/<pet_id>
+# /meal/<id>
+# /meal/pet/<pet_id>
+# /meal/
 class MealManager(Resource):
     meals_methods = MealsDbMethodsMySQL(mysql)
 
@@ -337,6 +345,8 @@ user_notification_args.add_argument("push_notification_token")
 
 
 # PushNotification incharge of notifying user
+# /push/<pet_id>
+# /updateToken/<user_id>
 class PushNotification(Resource):
     user_db_methods = UserDBMethodsMySQL(mysql)
     pet_db_methods = PetDbMethodsMySQL(mysql)
@@ -362,7 +372,7 @@ class PushNotification(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
-
+# /meal/history/pet/<pet_id>
 class MealsHistory(Resource):
     meals_history_methods = MealsHistoryDbMethodsMySQL(mysql)
 
