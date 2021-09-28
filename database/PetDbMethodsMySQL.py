@@ -2,12 +2,13 @@ from database.IPetDbMethods import IPetDbMethods
 from mysql.connector import Error
 
 from database.Models import PetModel
+from flask_mysqldb import MySQL
 
 
 class PetDbMethodsMySQL(IPetDbMethods):
     def __init__(self, db):
         super().__init__(db)
-        self.db = db
+        self.db: MySQL = db
 
     def get(self, id):
         cursor = self.db.connection.cursor()
@@ -37,7 +38,7 @@ class PetDbMethodsMySQL(IPetDbMethods):
 
     def get_by_userid(self, user_id):
         cursor = self.db.connection.cursor()
-        cursor.execute("SELECT * FROM petodb.pets WHERE user_id = %s", [user_id])
+        cursor.execute("SELECT * FROM petodb.pets WHERE user_id = %s and active = 1", [user_id])
         pets = cursor.fetchall()
         return pets
 
@@ -52,5 +53,6 @@ class PetDbMethodsMySQL(IPetDbMethods):
 
     def delete(self, id):
         cursor = self.db.connection.cursor()
-        cursor.execute("DELETE FROM petodb.pets WHERE id = %s;", [id])
+        cursor.execute("UPDATE petodb.pets SET machine_id = NULL, active = 0 WHERE (id = %s);", [id])
+        cursor.execute("UPDATE petodb.machines SET pet_id = 0 WHERE (pet_id = %s);", [id])
         self.db.connection.commit()

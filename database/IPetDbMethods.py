@@ -29,4 +29,3 @@ class IPetDbMethods(ABC):
     @abstractmethod
     def get_token(self, id):
         pass
-

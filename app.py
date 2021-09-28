@@ -217,7 +217,6 @@ pet_container_args.add_argument("container", type=float, help="valid container p
 class PetFeeder(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
 
-
     def put(self, id):
         # pet = self.pet_db_methods.get(id)
         args = pet_feed_args.parse_args()
@@ -230,11 +229,11 @@ class PetFeeder(Resource):
             amount: int = feeding_requests[id]
             feeding_requests.pop(id)
             return amount
-    def post(self,id):
-        args = pet_container_args.parse_args()
-        result = self.pet_db_methods.post(id,args['container'])
-        return result
 
+    def post(self, id):
+        args = pet_container_args.parse_args()
+        result = self.pet_db_methods.post(id, args['container'])
+        return result
 
 
 meal_args = reqparse.RequestParser()
@@ -276,6 +275,7 @@ class MealManager(Resource):
         try:
             result = self.meals_methods.get_by_pet_id(pet_id)
             if not result:
+                return [], 200
                 abort(404, message="No meals found with that pet_id")
             result = json.loads(json.dumps(result, indent=4, sort_keys=True, default=str))
             for meal in result:
