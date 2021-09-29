@@ -15,5 +15,11 @@ class IPetHelathRateMethods(ABC):
         pass
 
     @abstractmethod
+    def get(self, pet_id):
+        pass
+
+    @abstractmethod
     def update(self, pet_id):
         pass
+
+

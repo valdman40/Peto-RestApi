@@ -32,3 +32,15 @@ class PetHealthRateDbMethodsMySQL(IPetHelathRateMethods):
         cursor.execute("UPDATE pet_rating_health SET rate = %s WHERE id = %s", [pet_health['rate'], pet_health['id']])
         self.db.connection.commit()
         return pet_health
+
+    def get(self, pet_id):
+        cursor = self.db.connection.cursor()
+        query = "Select a.pet_id, amount_given, amount_eaten, a.date, coalesce(rate, 5) as rate from " \
+                "(SELECT SUM(amount_given) as amount_given,SUM(amount_eaten) as amount_eaten, Date(time) as date, " \
+                f"pet_id FROM petodb.meals_history where pet_id = {pet_id} group by date, pet_id) as a " \
+                "left join " \
+                f"(Select * from petodb.pet_rating_health where pet_id = {pet_id}) as b " \
+                "on a.date = b.date order by pet_id, a.date"
+        cursor.execute(query)
+        graph = cursor.fetchall()
+        return graph

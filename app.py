@@ -1,4 +1,5 @@
 from datetime import datetime
+import simplejson as json
 
 from flask import Flask, request
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
@@ -14,6 +15,8 @@ from database.MachineDbMethodsMySQL import MachineDbMethodsMySQL
 from database.PetHealthRateDbMethodsMySQL import PetHealthRateDbMethodsMySQL
 import json
 import requests
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
 # import configparser
 
@@ -423,6 +426,18 @@ class PetHealth(Resource):
             return abort(404, message=error.msg)
 
 
+class PetHealthGraph(Resource):
+    pet_health_methods = PetHealthRateDbMethodsMySQL(mysql)
+
+    def get(self, pet_id):
+        try:
+            pet_health: PetHealthModel = self.pet_health_methods.get(pet_id)
+            pet_health = json.loads(json.dumps(pet_health, cls=DjangoJSONEncoder))
+            return pet_health, 200
+        except Error as error:
+            return abort(404, message=error.msg)
+
+
 api.add_resource(User, "/users/")
 api.add_resource(User, "/users/<id>", endpoint="user_patch")
 api.add_resource(Pet, '/pets/', endpoint="/pets/")
@@ -438,7 +453,8 @@ api.add_resource(PushNotification, '/updateToken/<user_id>', endpoint="/updateTo
 api.add_resource(MealsHistory, '/meal/history/pet/<pet_id>')
 api.add_resource(MachinePairing, '/pair/<machine_id>')
 api.add_resource(PetHealth, '/pets/rating/<pet_id>')
-api.add_resource(PetHealth, '/pets/rating/<pet_id>', endpoint="PetHealth_get")
+api.add_resource(PetHealth, '/pets/rating/<pet_id>', endpoint="PetHealth_get_day")
+api.add_resource(PetHealthGraph, '/pets/graph/<pet_id>')
 
 if __name__ == "__main__":
     # app.run(debug=True)
