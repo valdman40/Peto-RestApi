@@ -12,6 +12,12 @@ class MachineDbMethodsMySQL(IMachineMethods):
         cursor.execute("SELECT * FROM petodb.machines WHERE id = %s", [id])
         machine = cursor.fetchone()
         return machine
+    def get_by_pet_id(self,pet_id):
+        cursor = self.db.connection.cursor()
+        cursor.execute("SELECT * FROM petodb.machines WHERE pet_id = %s;", [pet_id])
+        machine = cursor.fetchone()
+        return machine
+
 
     def update(self, id, pet_id):
         cursor = self.db.connection.cursor()

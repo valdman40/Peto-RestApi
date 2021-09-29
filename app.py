@@ -227,9 +227,10 @@ pet_container_args = reqparse.RequestParser()
 pet_container_args.add_argument("container", type=float, help="valid container percentage is required", required=True)
 
 
-#
+#pets/feed/
 class PetFeeder(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
+    machine_db_methods = MachineDbMethodsMySQL(mysql)
 
     def put(self, id):
         # pet = self.pet_db_methods.get(id)
@@ -239,7 +240,11 @@ class PetFeeder(Resource):
         print("feeding_requests", feeding_requests)
 
     def get(self, id):
-        if id in feeding_requests:
+        #check if id is still connected to machine
+        result = self.machine_db_methods.get_by_pet_id(id)
+        if result is None: #no machine is connected to pet_id
+            return 0
+        elif id in feeding_requests:
             amount: int = feeding_requests[id]
             feeding_requests.pop(id)
             return amount

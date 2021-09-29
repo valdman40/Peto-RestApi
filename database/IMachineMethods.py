@@ -11,5 +11,9 @@ class IMachineMethods(ABC):
         pass
 
     @abstractmethod
+    def get_by_pet_id(self, pet_id):
+        pass
+
+    @abstractmethod
     def update(self, id, pet_id):
         pass
