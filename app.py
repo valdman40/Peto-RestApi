@@ -66,6 +66,7 @@ user_resources_fields = {
 class User(Resource):
     user_db_methods = UserDBMethodsMySQL(mysql)
 
+    # get user by id
     def get(self, id):
         try:
             result = self.user_db_methods.get(id=id)
@@ -104,6 +105,7 @@ class User(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
+    # modify user details
     def patch(self, id):
         args = user_update_args.parse_args()
         try:
@@ -212,6 +214,7 @@ meal_resources_fields = {
 class PetsByUser(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
 
+    # get pets by user id
     def get(self, user_id):
         user_pets = self.pet_db_methods.get_by_userid(user_id)
         return user_pets, 200
@@ -227,11 +230,12 @@ pet_container_args = reqparse.RequestParser()
 pet_container_args.add_argument("container", type=float, help="valid container percentage is required", required=True)
 
 
-#pets/feed/
+# pets/feed/
 class PetFeeder(Resource):
     pet_db_methods = PetDbMethodsMySQL(mysql)
     machine_db_methods = MachineDbMethodsMySQL(mysql)
 
+    # add instant feeding
     def put(self, id):
         # pet = self.pet_db_methods.get(id)
         args = pet_feed_args.parse_args()
@@ -239,16 +243,18 @@ class PetFeeder(Resource):
         feeding_requests[id] = amount
         print("feeding_requests", feeding_requests)
 
+    # get instant feeding
     def get(self, id):
-        #check if id is still connected to machine
+        # check if id is still connected to machine
         result = self.machine_db_methods.get_by_pet_id(id)
-        if result is None: #no machine is connected to pet_id
+        if result is None:  # no machine is connected to pet_id
             return 0
         elif id in feeding_requests:
             amount: int = feeding_requests[id]
             feeding_requests.pop(id)
             return amount
 
+    # edit container value
     def post(self, id):
         args = pet_container_args.parse_args()
         result = self.pet_db_methods.post(id, args['container'])
@@ -271,6 +277,8 @@ post_meal_args.add_argument("amountEaten", type=int, help="amountEaten of food i
 post_meal_args.add_argument("petFinishedEating", type=str, help="Time is required", required=True)
 
 
+# /pair/<machine_id>
+
 class MachinePairing(Resource):
     machine_db_methods = MachineDbMethodsMySQL(mysql)
 
@@ -285,6 +293,8 @@ class MachinePairing(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
+
+# /meal/pet/<pet_id>
 
 class MealManager(Resource):
     meals_methods = MealsDbMethodsMySQL(mysql)
@@ -304,6 +314,8 @@ class MealManager(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
+    # edit meal
+
     def patch(self, id):
         args = meal_args.parse_args()
         try:
@@ -313,6 +325,8 @@ class MealManager(Resource):
             return 200
         except Error as error:
             return abort(404, message=error.msg)
+
+    # add meal
 
     def put(self, pet_id):
         args = meal_args.parse_args()
@@ -324,6 +338,8 @@ class MealManager(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
+    # delete meal
+
     def delete(self, id):
         try:
             pet = self.meals_methods.get(id)
@@ -334,7 +350,8 @@ class MealManager(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
-    def post(self, pet_id):  # post meal summary
+    # post meal summary
+    def post(self, pet_id):
         try:
             args = post_meal_args.parse_args()
             meal = MealSummaryModel(name=args['name'], mealTime=args['mealTime'],
@@ -356,10 +373,13 @@ user_notification_args.add_argument("push_notification_token")
 
 
 # PushNotification incharge of notifying user
+# /updateToken/<user_id>
+# /push/<pet_id>
 class PushNotification(Resource):
     user_db_methods = UserDBMethodsMySQL(mysql)
     pet_db_methods = PetDbMethodsMySQL(mysql)
 
+    # send notification
     def put(self, pet_id):
         args = notification_args.parse_args()
         url = "https://exp.host/--/api/v2/push/send"
@@ -373,6 +393,7 @@ class PushNotification(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
+    # update user token
     def patch(self, user_id):
         args = user_notification_args.parse_args()
         try:
@@ -382,6 +403,7 @@ class PushNotification(Resource):
             return abort(404, message=error.msg)
 
 
+# /meal/history/pet/<pet_id>
 class MealsHistory(Resource):
     meals_history_methods = MealsHistoryDbMethodsMySQL(mysql)
 
@@ -403,9 +425,11 @@ health_args.add_argument("pet_id")
 health_args.add_argument("date")
 
 
+# /pets/rating/<pet_id>
 class PetHealth(Resource):
     pet_health_methods = PetHealthRateDbMethodsMySQL(mysql)
 
+    # add\edit current pets health rating
     def put(self, pet_id):
         args = health_args.parse_args()
         try:
@@ -420,6 +444,7 @@ class PetHealth(Resource):
         except Error as error:
             return abort(404, message=error.msg)
 
+    # get current pets health rating
     def get(self, pet_id):
         try:
             pet_health: PetHealthModel = self.pet_health_methods.get_today(pet_id)
@@ -431,8 +456,12 @@ class PetHealth(Resource):
             return abort(404, message=error.msg)
 
 
+# /pets/graph/<pet_id>
+
 class PetHealthGraph(Resource):
     pet_health_methods = PetHealthRateDbMethodsMySQL(mysql)
+
+    # get graph details
 
     def get(self, pet_id):
         try:
